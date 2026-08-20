@@ -9,4 +9,9 @@ public interface ProcessedTokenEventPort {
 	boolean existsByEventUuid(UUID eventUuid);
 
 	void save(ProcessedTokenEvent event);
+
+	/**
+	 * @return true if newly recorded, false if already processed
+	 */
+	boolean saveIdempotent(ProcessedTokenEvent event);
 }

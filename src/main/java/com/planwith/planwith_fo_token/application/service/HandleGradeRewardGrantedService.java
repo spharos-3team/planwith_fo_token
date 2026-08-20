@@ -50,12 +50,16 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 				command.rewardType(),
 				"Grade reward token grant"
 		));
-		processedTokenEventPort.save(ProcessedTokenEvent.recorded(
+		boolean recorded = processedTokenEventPort.saveIdempotent(ProcessedTokenEvent.recorded(
 				command.eventUuid(),
 				command.memberUuid(),
 				TokenRewardedEvent.EVENT_TYPE,
 				command.grantedAt()
 		));
+		if (!recorded) {
+			log.warn("HandleGradeRewardGrantedService : handle : GradeRewardGranted 처리 기록 경합 - eventUuid={}",
+					command.eventUuid());
+		}
 		log.info("HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 완료 - eventUuid={}",
 				command.eventUuid());
 	}

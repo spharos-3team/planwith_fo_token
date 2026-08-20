@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
 
+import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
+
+import jakarta.persistence.OptimisticLockException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,6 +22,16 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InsufficientTokenBalanceException.class)
 	public ResponseEntity<ApiErrorResponse> handleInsufficientBalance(InsufficientTokenBalanceException exception) {
 		return createErrorResponse(HttpStatus.CONFLICT, "TOKEN_INSUFFICIENT", exception.getMessage());
+	}
+
+	@ExceptionHandler(DuplicateTransactionException.class)
+	public ResponseEntity<ApiErrorResponse> handleDuplicateTransaction(DuplicateTransactionException exception) {
+		return createErrorResponse(HttpStatus.CONFLICT, "DUPLICATE_IDEMPOTENCY_KEY", exception.getMessage());
+	}
+
+	@ExceptionHandler(OptimisticLockException.class)
+	public ResponseEntity<ApiErrorResponse> handleOptimisticLock(OptimisticLockException exception) {
+		return createErrorResponse(HttpStatus.CONFLICT, "WALLET_VERSION_CONFLICT", exception.getMessage());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
