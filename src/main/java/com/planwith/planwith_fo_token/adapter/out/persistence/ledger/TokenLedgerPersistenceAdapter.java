@@ -14,6 +14,7 @@ import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntry;
 import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
+import com.planwith.planwith_fo_token.domain.service.TokenPolicy;
 
 @Component
 public class TokenLedgerPersistenceAdapter implements TokenLedgerPort {
@@ -29,23 +30,35 @@ public class TokenLedgerPersistenceAdapter implements TokenLedgerPort {
 	@Override
 	@Transactional(readOnly = true)
 	public boolean existsByTransactionUuid(TransactionUuid transactionUuid) {
-		return repository.existsByTransactionUuid(transactionUuid.value());
+		return repository.existsByTokenLedgerUuid(transactionUuid.value());
 	}
 
 	@Override
 	@Transactional
 	public TokenLedgerEntry save(TokenLedgerEntry entry) {
+		if (entry.tokenLedgerId() != null && !TokenPolicy.ledgerMutable()) {
+			throw new IllegalStateException("Ledger UPDATE/DELETE is not allowed.");
+		}
 		TokenLedgerJpaEntity saved = repository.save(TokenLedgerPersistenceMapper.toEntity(entry));
-		log.debug("TokenLedgerPersistenceAdapter : save : 토큰 원장 저장 - transactionUuid={}, entryType={}",
-				entry.transactionUuid(), entry.entryType());
+		log.debug("TokenLedgerPersistenceAdapter : save : 토큰 원장 INSERT - tokenLedgerUuid={}, type={}",
+				entry.tokenLedgerUuid(), entry.transactionType());
 		return TokenLedgerPersistenceMapper.toDomain(saved);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<TokenLedgerEntry> findByTransactionUuid(TransactionUuid transactionUuid) {
-		return repository.findByTransactionUuid(transactionUuid.value())
+		return repository.findByTokenLedgerUuid(transactionUuid.value())
 				.map(TokenLedgerPersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TokenLedgerEntry> findByMemberUuidChronological(MemberUuid memberUuid) {
+		return repository.findByMemberUuidOrderByOccurredAtAsc(memberUuid.value())
+				.stream()
+				.map(TokenLedgerPersistenceMapper::toDomain)
+				.toList();
 	}
 
 	@Override
@@ -68,7 +81,7 @@ public class TokenLedgerPersistenceAdapter implements TokenLedgerPort {
 			int page,
 			int size
 	) {
-		return repository.findByMemberUuidAndEntryTypeOrderByOccurredAtDesc(
+		return repository.findByMemberUuidAndTransactionTypeOrderByOccurredAtDesc(
 						memberUuid.value(),
 						entryType,
 						PageRequest.of(normalizePage(page), normalizeSize(size))

@@ -41,10 +41,14 @@ public class TokenQueryService implements
 	@Transactional(readOnly = true)
 	public TokenBalanceResult getBalance(GetTokenBalanceQuery query) {
 		log.debug("TokenQueryService : getBalance : 토큰 잔액 조회 - memberUuid={}", query.memberUuid());
-		long balance = tokenWalletPort.findByMemberUuid(query.memberUuid())
-				.map(TokenWallet::balance)
-				.orElse(0L);
-		return new TokenBalanceResult(query.memberUuid(), balance);
+		TokenWallet wallet = tokenWalletPort.getByMemberUuid(query.memberUuid());
+		return new TokenBalanceResult(
+				query.memberUuid(),
+				wallet.paidBalance(),
+				wallet.freeBalance(),
+				wallet.bonusBalance(),
+				wallet.totalBalance()
+		);
 	}
 
 	@Override
@@ -81,7 +85,7 @@ public class TokenQueryService implements
 				entry.amount(),
 				entry.balanceAfter(),
 				entry.referenceType(),
-				entry.referenceUuid(),
+				entry.description(),
 				entry.occurredAt()
 		);
 	}

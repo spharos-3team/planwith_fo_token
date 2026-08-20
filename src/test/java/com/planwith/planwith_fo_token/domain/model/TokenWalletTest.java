@@ -7,41 +7,64 @@ import org.junit.jupiter.api.Test;
 
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.service.TokenPolicy;
 
 class TokenWalletTest {
 
+	private static final MemberUuid MEMBER = MemberUuid.from("11111111-1111-1111-1111-111111111111");
+
 	@Test
-	void creditIncreasesBalance() {
-		TokenWallet wallet = TokenWallet.create(MemberUuid.from("11111111-1111-1111-1111-111111111111"));
+	void totalBalanceIsPaidPlusFreePlusBonus() {
+		TokenWallet wallet = TokenWallet.restore(MEMBER, 100L, 20L, 10L);
 
-		TokenLedgerEntry entry = wallet.credit(100L, TokenLedgerEntryType.REWARD);
-
-		assertThat(wallet.balance()).isEqualTo(100L);
-		assertThat(entry.balanceAfter()).isEqualTo(100L);
-		assertThat(entry.amount()).isEqualTo(100L);
+		assertThat(wallet.totalBalance()).isEqualTo(130L);
+		assertThat(wallet.totalBalance()).isEqualTo(
+				TokenPolicy.totalBalance(wallet.paidBalance(), wallet.freeBalance(), wallet.bonusBalance())
+		);
 	}
 
 	@Test
-	void debitDecreasesBalance() {
-		TokenWallet wallet = TokenWallet.restore(
-				1L,
-				MemberUuid.from("11111111-1111-1111-1111-111111111111"),
-				100L,
-				0L
+	void debitUsesFreeThenBonusThenPaid() {
+		TokenWallet wallet = TokenWallet.restore(MEMBER, 50L, 10L, 20L);
+
+		var deductions = wallet.debit(25L);
+
+		assertThat(deductions).containsExactly(
+				new TokenKindDeduction(TokenKind.FREE, 10L),
+				new TokenKindDeduction(TokenKind.BONUS, 15L)
 		);
-
-		TokenLedgerEntry entry = wallet.debit(30L, TokenLedgerEntryType.USE);
-
-		assertThat(wallet.balance()).isEqualTo(70L);
-		assertThat(entry.balanceAfter()).isEqualTo(70L);
-		assertThat(entry.amount()).isEqualTo(-30L);
+		assertThat(wallet.freeBalance()).isZero();
+		assertThat(wallet.bonusBalance()).isEqualTo(5L);
+		assertThat(wallet.paidBalance()).isEqualTo(50L);
 	}
 
 	@Test
 	void debitThrowsWhenBalanceIsInsufficient() {
-		TokenWallet wallet = TokenWallet.create(MemberUuid.from("11111111-1111-1111-1111-111111111111"));
+		TokenWallet wallet = TokenWallet.empty(MEMBER);
 
-		assertThatThrownBy(() -> wallet.debit(1L, TokenLedgerEntryType.USE))
+		assertThatThrownBy(() -> wallet.debit(1L))
 				.isInstanceOf(InsufficientTokenBalanceException.class);
+	}
+
+	@Test
+	void expireFreeClearsOnlyFreeTokens() {
+		TokenWallet wallet = TokenWallet.restore(MEMBER, 30L, 15L, 8L);
+
+		long expired = wallet.expireFree();
+
+		assertThat(expired).isEqualTo(15L);
+		assertThat(wallet.freeBalance()).isZero();
+		assertThat(wallet.paidBalance()).isEqualTo(30L);
+		assertThat(wallet.bonusBalance()).isEqualTo(8L);
+		assertThat(TokenPolicy.expiresBeforeMonthlyGrant(TokenKind.FREE)).isTrue();
+		assertThat(TokenPolicy.bonusExpiresAutomatically()).isFalse();
+	}
+
+	@Test
+	void negativeBalanceIsRejected() {
+		assertThatThrownBy(() -> TokenWallet.restore(MEMBER, -1L, 0L, 0L))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(TokenPolicy.allowsNegativeBalance()).isFalse();
+		assertThat(TokenPolicy.ledgerMutable()).isFalse();
 	}
 }

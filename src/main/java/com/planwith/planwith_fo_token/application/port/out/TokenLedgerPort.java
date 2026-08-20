@@ -16,6 +16,8 @@ public interface TokenLedgerPort {
 
 	Optional<TokenLedgerEntry> findByTransactionUuid(TransactionUuid transactionUuid);
 
+	List<TokenLedgerEntry> findByMemberUuidChronological(MemberUuid memberUuid);
+
 	List<TokenLedgerEntry> findByMemberUuid(MemberUuid memberUuid, int page, int size);
 
 	List<TokenLedgerEntry> findByMemberUuidAndEntryType(
