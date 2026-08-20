@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_token.domain.model;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 
@@ -38,6 +39,29 @@ public final class PaymentMethod {
 		this.defaultMethod = defaultMethod;
 		this.status = Objects.requireNonNull(status, "Payment method status is required.");
 		this.registeredAt = Objects.requireNonNull(registeredAt, "Registered at is required.");
+		validateDefaultStatusCombination(defaultMethod, status);
+	}
+
+	public static PaymentMethod register(
+			PaymentMethodUuid paymentMethodUuid,
+			MemberUuid memberUuid,
+			String billingKey,
+			String cardName,
+			String fourCardNumber,
+			boolean defaultMethod,
+			Instant registeredAt
+	) {
+		return new PaymentMethod(
+				null,
+				paymentMethodUuid,
+				memberUuid,
+				billingKey,
+				cardName,
+				fourCardNumber,
+				defaultMethod,
+				PaymentMethodStatus.ACTIVE,
+				registeredAt
+		);
 	}
 
 	public static PaymentMethod restore(
@@ -62,6 +86,31 @@ public final class PaymentMethod {
 				status,
 				registeredAt
 		);
+	}
+
+	public PaymentMethod markAsDefault() {
+		ensureActive("mark as default");
+		if (defaultMethod) {
+			return this;
+		}
+		return copy(true, status);
+	}
+
+	public PaymentMethod clearDefault() {
+		if (!defaultMethod) {
+			return this;
+		}
+		return copy(false, status);
+	}
+
+	public PaymentMethod delete() {
+		ensureActive("delete");
+		return copy(false, PaymentMethodStatus.DELETED);
+	}
+
+	public PaymentMethod expire() {
+		ensureActive("expire");
+		return copy(false, PaymentMethodStatus.EXPIRED);
 	}
 
 	public Long paymentMethodId() {
@@ -98,5 +147,36 @@ public final class PaymentMethod {
 
 	public Instant registeredAt() {
 		return registeredAt;
+	}
+
+	private void ensureActive(String action) {
+		if (status != PaymentMethodStatus.ACTIVE) {
+			throw new InvalidPaymentMethodStateException(
+					"Cannot " + action + " payment method in status " + status
+							+ ". paymentMethodUuid=" + paymentMethodUuid.value()
+			);
+		}
+	}
+
+	private static void validateDefaultStatusCombination(boolean defaultMethod, PaymentMethodStatus status) {
+		if (defaultMethod && status != PaymentMethodStatus.ACTIVE) {
+			throw new InvalidPaymentMethodStateException(
+					"Only ACTIVE payment methods can be default. status=" + status
+			);
+		}
+	}
+
+	private PaymentMethod copy(boolean nextDefaultMethod, PaymentMethodStatus nextStatus) {
+		return new PaymentMethod(
+				paymentMethodId,
+				paymentMethodUuid,
+				memberUuid,
+				billingKey,
+				cardName,
+				fourCardNumber,
+				nextDefaultMethod,
+				nextStatus,
+				registeredAt
+		);
 	}
 }

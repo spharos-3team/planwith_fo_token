@@ -90,3 +90,10 @@ token:
     backoff-initial: ${TOKEN_OUTBOX_BACKOFF_INITIAL:5s}
     backoff-multiplier: ${TOKEN_OUTBOX_BACKOFF_MULTIPLIER:2}
     backoff-max: ${TOKEN_OUTBOX_BACKOFF_MAX:5m}
+
+portone:
+  stub-enabled: ${PORTONE_STUB_ENABLED:true}
+  store-id: ${PORTONE_STORE_ID:}
+  channel-key: ${PORTONE_CHANNEL_KEY:}
+  api-secret: ${PORTONE_API_SECRET:}
+  api-base-url: ${PORTONE_API_BASE_URL:https://api.portone.io}

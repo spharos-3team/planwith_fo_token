@@ -33,3 +33,6 @@ token:
     consumer-enabled: false
   outbox:
     enabled: false
+
+portone:
+  stub-enabled: true

@@ -34,7 +34,7 @@ token:
 
 portone:
   stub-enabled: false
-  store-id: ${PORTONE_STORE_ID}
-  channel-key: ${PORTONE_CHANNEL_KEY}
-  api-secret: ${PORTONE_API_SECRET}
+  store-id: store-e091eba1-ca0f-4fa7-8134-0fe43e9e727e
+  channel-key: channel-key-37faef63-c3a7-435f-afa1-b4dd0421860f
+  api-secret: LNHflrDOCq7DYbmKUjFzVih7vj121xQdEbfBUW6FDF078hP7OSSLI6bOHzRmrb5yoNtzWdHHG0b8YUC4
   api-base-url: https://api.portone.io
