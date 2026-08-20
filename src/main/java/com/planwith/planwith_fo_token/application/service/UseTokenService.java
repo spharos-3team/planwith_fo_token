@@ -1,7 +1,5 @@
 package com.planwith.planwith_fo_token.application.service;
 
-import java.time.Instant;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,36 +7,36 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.command.UseTokenCommand;
 import com.planwith.planwith_fo_token.application.port.in.command.UseTokenUseCase;
-import com.planwith.planwith_fo_token.application.service.support.TokenCommandSupport;
-import com.planwith.planwith_fo_token.application.service.support.TokenLedgerCommandExecutor;
+import com.planwith.planwith_fo_token.application.service.support.TokenUseExecutor;
+import com.planwith.planwith_fo_token.domain.model.TokenLedger;
 
 @Service
 public class UseTokenService implements UseTokenUseCase {
 
 	private static final Logger log = LoggerFactory.getLogger(UseTokenService.class);
 
-	private final TokenLedgerCommandExecutor commandExecutor;
+	private final TokenUseExecutor tokenUseExecutor;
 
-	public UseTokenService(TokenLedgerCommandExecutor commandExecutor) {
-		this.commandExecutor = commandExecutor;
+	public UseTokenService(TokenUseExecutor tokenUseExecutor) {
+		this.tokenUseExecutor = tokenUseExecutor;
 	}
 
 	@Override
 	@Transactional
 	public void use(UseTokenCommand command) {
-		log.info("UseTokenService : use : 토큰 사용 요청 - memberUuid={}, transactionUuid={}",
-				command.memberUuid(), command.transactionUuid());
-		commandExecutor.executeMutation(
-				command.transactionUuid(),
+		log.info(
+				"UseTokenService : use : 토큰 사용 요청 - memberUuid={}, transactionUuid={}, amount={}, referenceType={}",
 				command.memberUuid(),
-				wallet -> wallet.use(
-						command.transactionUuid(),
-						command.amount(),
-						TokenCommandSupport.parseReferenceType(command.referenceType()),
-						TokenCommandSupport.descriptionOrDefault(command.description(), "Token use"),
-						Instant.now()
-				)
+				command.transactionUuid(),
+				command.amount(),
+				command.referenceType()
 		);
-		log.info("UseTokenService : use : 토큰 사용 완료 - memberUuid={}", command.memberUuid());
+		TokenLedger ledger = tokenUseExecutor.use(command);
+		log.info(
+				"UseTokenService : use : 토큰 사용 완료 - memberUuid={}, amount={}, balanceAfter={}",
+				command.memberUuid(),
+				ledger.amount(),
+				ledger.balanceAfter()
+		);
 	}
 }

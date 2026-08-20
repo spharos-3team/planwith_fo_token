@@ -45,16 +45,30 @@ class TokenWalletTest {
 
 	@Test
 	void useDecreasesFreeThenBonusThenPaid() {
-		TokenWallet wallet = TokenWallet.restore(MEMBER, 50L, 10L, 20L);
+		TokenWallet wallet = TokenWallet.restore(MEMBER, 100L, 10L, 20L);
 
 		TokenLedger used = wallet.use(25L, ReferenceType.AI_SCHEDULE, "use", NOW);
 
 		assertThat(used.transactionType()).isEqualTo(TransactionType.USE);
 		assertThat(used.amount()).isEqualTo(25L);
 		assertThat(used.balanceAfter()).isEqualTo(wallet.getTotalBalance());
+		assertThat(used.referenceType()).isEqualTo(ReferenceType.AI_SCHEDULE);
 		assertThat(wallet.getFreeBalance()).isZero();
 		assertThat(wallet.getBonusBalance()).isEqualTo(5L);
-		assertThat(wallet.getPaidBalance()).isEqualTo(50L);
+		assertThat(wallet.getPaidBalance()).isEqualTo(100L);
+		assertThat(wallet.getTotalBalance()).isEqualTo(105L);
+		assertThat(wallet.getTotalBalance()).isEqualTo(
+				TokenPolicy.totalBalance(wallet.getPaidBalance(), wallet.getFreeBalance(), wallet.getBonusBalance())
+		);
+	}
+
+	@Test
+	void useRejectsNonPositiveAmount() {
+		TokenWallet wallet = TokenWallet.restore(MEMBER, 10L, 0L, 0L);
+
+		assertThatThrownBy(() -> wallet.use(0L, ReferenceType.PDF_DOWNLOAD, "use", NOW))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("positive");
 	}
 
 	@Test
