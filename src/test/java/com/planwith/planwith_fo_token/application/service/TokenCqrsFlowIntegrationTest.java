@@ -60,11 +60,10 @@ class TokenCqrsFlowIntegrationTest {
 				"payment-1",
 				"charge"
 		));
-		grantTokenUseCase.grant(new GrantTokenCommand(
+		grantTokenUseCase.grant(GrantTokenCommand.gradeReward(
 				new TransactionUuid(grantTx),
 				MEMBER,
 				20L,
-				"GRADE_REWARD",
 				"grade-1",
 				"grade reward"
 		));

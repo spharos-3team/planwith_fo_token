@@ -70,11 +70,10 @@ class TokenHistoryQueryControllerIntegrationTest {
 				"p1",
 				"charge"
 		));
-		grantTokenUseCase.grant(new GrantTokenCommand(
+		grantTokenUseCase.grant(GrantTokenCommand.gradeReward(
 				TransactionUuid.from("a2222222-2222-2222-2222-222222222222"),
 				MEMBER_UUID,
 				30L,
-				"GRADE_REWARD",
 				"g1",
 				"reward"
 		));
