@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(InsufficientTokenBalanceException.class)
 	public ResponseEntity<ApiErrorResponse> handleInsufficientBalance(InsufficientTokenBalanceException exception) {
-		return createErrorResponse(HttpStatus.CONFLICT, "INSUFFICIENT_TOKEN_BALANCE", exception.getMessage());
+		return createErrorResponse(HttpStatus.CONFLICT, "TOKEN_INSUFFICIENT", exception.getMessage());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
