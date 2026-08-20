@@ -13,6 +13,8 @@ interface SpringDataTokenOutboxRepository extends JpaRepository<TokenOutboxJpaEn
 
 	boolean existsByEventUuid(UUID eventUuid);
 
+	java.util.Optional<TokenOutboxJpaEntity> findByEventUuid(UUID eventUuid);
+
 	@Query("""
 			select outbox
 			from TokenOutboxJpaEntity outbox

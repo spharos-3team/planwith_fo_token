@@ -1,11 +1,11 @@
 package com.planwith.planwith_fo_token.adapter.out.persistence.outbox;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
@@ -23,7 +23,7 @@ public class TokenEventOutboxAdapter implements TokenEventOutboxPort {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(propagation = Propagation.MANDATORY)
 	public void save(TokenOutboxMessage message) {
 		UUID eventUuid = UUID.fromString(message.eventUuid());
 		if (repository.existsByEventUuid(eventUuid)) {
@@ -37,7 +37,7 @@ public class TokenEventOutboxAdapter implements TokenEventOutboxPort {
 				UUID.fromString(message.aggregateUuid()),
 				message.eventType(),
 				message.payload(),
-				Instant.now()
+				message.occurredAt()
 		));
 		log.info("TokenEventOutboxAdapter : save : 토큰 Outbox 저장 완료 - eventUuid={}, eventType={}",
 				message.eventUuid(), message.eventType());
