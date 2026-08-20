@@ -17,8 +17,8 @@ import com.planwith.planwith_fo_token.application.query.GetTokenChargeHistoryQue
 import com.planwith.planwith_fo_token.application.query.GetTokenLedgerQuery;
 import com.planwith.planwith_fo_token.application.query.TokenBalanceResult;
 import com.planwith.planwith_fo_token.application.query.TokenLedgerEntryResult;
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntry;
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TokenLedger;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 import com.planwith.planwith_fo_token.domain.model.TokenWallet;
 
 @Service
@@ -67,7 +67,7 @@ public class TokenQueryService implements
 		log.debug("TokenQueryService : getChargeHistory : 토큰 충전 내역 조회 - memberUuid={}", query.memberUuid());
 		return tokenLedgerPort.findByMemberUuidAndEntryType(
 						query.memberUuid(),
-						TokenLedgerEntryType.CHARGE,
+						TransactionType.CHARGE,
 						query.page(),
 						query.size()
 				)
@@ -76,12 +76,13 @@ public class TokenQueryService implements
 				.toList();
 	}
 
-	private TokenLedgerEntryResult toResult(TokenLedgerEntry entry) {
+	private TokenLedgerEntryResult toResult(TokenLedger entry) {
 		return new TokenLedgerEntryResult(
 				entry.ledgerId(),
 				entry.transactionUuid(),
 				entry.memberUuid(),
 				entry.entryType(),
+				entry.tokenType(),
 				entry.amount(),
 				entry.balanceAfter(),
 				entry.referenceType(),

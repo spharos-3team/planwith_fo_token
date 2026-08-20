@@ -12,11 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.port.out.TokenLedgerPort;
 import com.planwith.planwith_fo_token.application.port.out.TokenWalletPort;
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
-import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
+import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenWallet;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
-import com.planwith.planwith_fo_token.domain.service.TokenLedgerDomainService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -35,26 +34,24 @@ class TokenWalletPersistenceAdapterIntegrationTest {
 		TokenWallet wallet = TokenWallet.empty(memberUuid);
 		Instant now = Instant.parse("2026-08-20T01:00:00Z");
 
-		tokenLedgerPort.save(TokenLedgerDomainService.grant(
-				wallet,
-				TokenLedgerEntryType.CHARGE,
-				TokenReferenceType.PAYMENT,
+		tokenLedgerPort.save(wallet.grant(
+				TransactionType.CHARGE,
+				ReferenceType.PAYMENT,
 				500L,
 				"charge",
 				now
 		));
-		tokenLedgerPort.save(TokenLedgerDomainService.grant(
-				wallet,
-				TokenLedgerEntryType.REWARD,
-				TokenReferenceType.GRADE_REWARD,
+		tokenLedgerPort.save(wallet.grant(
+				TransactionType.REWARD,
+				ReferenceType.GRADE_REWARD,
 				40L,
 				"grade free",
 				now.plusSeconds(1)
 		));
 
 		TokenWallet found = tokenWalletPort.getByMemberUuid(memberUuid);
-		assertThat(found.paidBalance()).isEqualTo(500L);
-		assertThat(found.freeBalance()).isEqualTo(40L);
-		assertThat(found.totalBalance()).isEqualTo(540L);
+		assertThat(found.getPaidBalance()).isEqualTo(500L);
+		assertThat(found.getFreeBalance()).isEqualTo(40L);
+		assertThat(found.getTotalBalance()).isEqualTo(540L);
 	}
 }

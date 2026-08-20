@@ -2,14 +2,17 @@ package com.planwith.planwith_fo_token.domain.model;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
+
+import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
 public final class TokenCharge {
 
 	private final Long chargeId;
-	private final UUID chargeUuid;
-	private final UUID walletUuid;
-	private final UUID paymentMethodUuid;
+	private final ChargeUuid chargeUuid;
+	private final TransactionUuid walletUuid;
+	private final PaymentMethodUuid paymentMethodUuid;
 	private final PaymentType paymentType;
 	private final String providerPaymentId;
 	private final long tokenAmount;
@@ -21,9 +24,9 @@ public final class TokenCharge {
 
 	private TokenCharge(
 			Long chargeId,
-			UUID chargeUuid,
-			UUID walletUuid,
-			UUID paymentMethodUuid,
+			ChargeUuid chargeUuid,
+			TransactionUuid walletUuid,
+			PaymentMethodUuid paymentMethodUuid,
 			PaymentType paymentType,
 			String providerPaymentId,
 			long tokenAmount,
@@ -49,9 +52,9 @@ public final class TokenCharge {
 
 	public static TokenCharge restore(
 			Long chargeId,
-			UUID chargeUuid,
-			UUID walletUuid,
-			UUID paymentMethodUuid,
+			ChargeUuid chargeUuid,
+			TransactionUuid walletUuid,
+			PaymentMethodUuid paymentMethodUuid,
 			PaymentType paymentType,
 			String providerPaymentId,
 			long tokenAmount,
@@ -85,15 +88,15 @@ public final class TokenCharge {
 		return chargeId;
 	}
 
-	public UUID chargeUuid() {
+	public ChargeUuid chargeUuid() {
 		return chargeUuid;
 	}
 
-	public UUID walletUuid() {
+	public TransactionUuid walletUuid() {
 		return walletUuid;
 	}
 
-	public UUID paymentMethodUuid() {
+	public PaymentMethodUuid paymentMethodUuid() {
 		return paymentMethodUuid;
 	}
 

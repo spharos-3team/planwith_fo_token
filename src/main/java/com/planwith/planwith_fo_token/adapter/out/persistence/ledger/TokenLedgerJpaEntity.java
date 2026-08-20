@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
-import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
+import com.planwith.planwith_fo_token.domain.model.ReferenceType;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,7 +44,7 @@ class TokenLedgerJpaEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "transaction_type", nullable = false, length = 20)
-	private TokenLedgerEntryType transactionType;
+	private TransactionType transactionType;
 
 	@Column(name = "amount", nullable = false)
 	private long amount;
@@ -54,7 +54,7 @@ class TokenLedgerJpaEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "reference_type", length = 30)
-	private TokenReferenceType referenceType;
+	private ReferenceType referenceType;
 
 	@Column(name = "description", length = 500)
 	private String description;
@@ -71,10 +71,10 @@ class TokenLedgerJpaEntity {
 	static TokenLedgerJpaEntity create(
 			UUID tokenLedgerUuid,
 			UUID memberUuid,
-			TokenLedgerEntryType transactionType,
+			TransactionType transactionType,
 			long amount,
 			long balanceAfter,
-			TokenReferenceType referenceType,
+			ReferenceType referenceType,
 			String description,
 			Instant occurredAt,
 			Instant createdAt
@@ -104,7 +104,7 @@ class TokenLedgerJpaEntity {
 		return memberUuid;
 	}
 
-	TokenLedgerEntryType getTransactionType() {
+	TransactionType getTransactionType() {
 		return transactionType;
 	}
 
@@ -116,7 +116,7 @@ class TokenLedgerJpaEntity {
 		return balanceAfter;
 	}
 
-	TokenReferenceType getReferenceType() {
+	ReferenceType getReferenceType() {
 		return referenceType;
 	}
 
