@@ -1,15 +1,18 @@
 package com.planwith.planwith_fo_token.adapter.out.persistence.charge;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.port.out.TokenChargePort;
 import com.planwith.planwith_fo_token.domain.model.TokenCharge;
+import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 
 @Component
 public class TokenChargePersistenceAdapter implements TokenChargePort {
@@ -36,5 +39,25 @@ public class TokenChargePersistenceAdapter implements TokenChargePort {
 	public Optional<TokenCharge> findByChargeUuid(UUID chargeUuid) {
 		return repository.findByChargeUuid(chargeUuid)
 				.map(TokenChargePersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TokenCharge> findByMemberUuid(MemberUuid memberUuid, int page, int size) {
+		return repository.findByMemberUuidOrderByChargedAtDesc(
+						memberUuid.value(),
+						PageRequest.of(normalizePage(page), normalizeSize(size))
+				)
+				.stream()
+				.map(TokenChargePersistenceMapper::toDomain)
+				.toList();
+	}
+
+	private static int normalizePage(int page) {
+		return Math.max(page, 0);
+	}
+
+	private static int normalizeSize(int size) {
+		return size > 0 ? size : 20;
 	}
 }
