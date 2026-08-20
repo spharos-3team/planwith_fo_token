@@ -10,29 +10,31 @@ final class TokenLedgerPersistenceMapper {
 	}
 
 	static TokenLedgerEntry toDomain(TokenLedgerJpaEntity entity) {
-		return TokenLedgerEntry.pending(
-				entity.getLedgerId(),
-				new TransactionUuid(entity.getTransactionUuid()),
+		return TokenLedgerEntry.restore(
+				entity.getTokenLedgerId(),
+				new TransactionUuid(entity.getTokenLedgerUuid()),
 				new MemberUuid(entity.getMemberUuid()),
-				entity.getEntryType(),
+				entity.getTransactionType(),
 				entity.getAmount(),
 				entity.getBalanceAfter(),
 				entity.getReferenceType(),
-				entity.getReferenceUuid(),
-				entity.getOccurredAt()
+				entity.getDescription(),
+				entity.getOccurredAt(),
+				entity.getCreatedAt()
 		);
 	}
 
 	static TokenLedgerJpaEntity toEntity(TokenLedgerEntry entry) {
 		return TokenLedgerJpaEntity.create(
-				entry.transactionUuid().value(),
+				entry.tokenLedgerUuid().value(),
 				entry.memberUuid().value(),
-				entry.entryType(),
+				entry.transactionType(),
 				entry.amount(),
 				entry.balanceAfter(),
 				entry.referenceType(),
-				entry.referenceUuid(),
-				entry.occurredAt()
+				entry.description(),
+				entry.occurredAt(),
+				entry.createdAt()
 		);
 	}
 }

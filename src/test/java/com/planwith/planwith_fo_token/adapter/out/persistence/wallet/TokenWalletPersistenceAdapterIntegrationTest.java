@@ -2,15 +2,21 @@ package com.planwith.planwith_fo_token.adapter.out.persistence.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.planwith.planwith_fo_token.application.port.out.TokenLedgerPort;
 import com.planwith.planwith_fo_token.application.port.out.TokenWalletPort;
+import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenWallet;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.service.TokenLedgerDomainService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -20,16 +26,35 @@ class TokenWalletPersistenceAdapterIntegrationTest {
 	@Autowired
 	private TokenWalletPort tokenWalletPort;
 
+	@Autowired
+	private TokenLedgerPort tokenLedgerPort;
+
 	@Test
-	void saveAndFindWallet() {
+	void reconstructsWalletFromTokenWalletLedgerTable() {
 		MemberUuid memberUuid = MemberUuid.from("22222222-2222-2222-2222-222222222222");
-		TokenWallet wallet = TokenWallet.create(memberUuid);
-		wallet.credit(500L, com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType.CHARGE);
+		TokenWallet wallet = TokenWallet.empty(memberUuid);
+		Instant now = Instant.parse("2026-08-20T01:00:00Z");
 
-		tokenWalletPort.save(wallet);
+		tokenLedgerPort.save(TokenLedgerDomainService.grant(
+				wallet,
+				TokenLedgerEntryType.CHARGE,
+				TokenReferenceType.PAYMENT,
+				500L,
+				"charge",
+				now
+		));
+		tokenLedgerPort.save(TokenLedgerDomainService.grant(
+				wallet,
+				TokenLedgerEntryType.REWARD,
+				TokenReferenceType.GRADE_REWARD,
+				40L,
+				"grade free",
+				now.plusSeconds(1)
+		));
 
-		TokenWallet found = tokenWalletPort.findByMemberUuid(memberUuid).orElseThrow();
-		assertThat(found.balance()).isEqualTo(500L);
-		assertThat(found.walletId()).isNotNull();
+		TokenWallet found = tokenWalletPort.getByMemberUuid(memberUuid);
+		assertThat(found.paidBalance()).isEqualTo(500L);
+		assertThat(found.freeBalance()).isEqualTo(40L);
+		assertThat(found.totalBalance()).isEqualTo(540L);
 	}
 }

@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_token.application.query;
 import java.time.Instant;
 
 import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
@@ -13,8 +14,8 @@ public record TokenLedgerEntryResult(
 		TokenLedgerEntryType entryType,
 		long amount,
 		long balanceAfter,
-		String referenceType,
-		String referenceUuid,
+		TokenReferenceType referenceType,
+		String description,
 		Instant occurredAt
 ) {
 }

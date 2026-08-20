@@ -11,15 +11,17 @@ import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
 
 interface SpringDataTokenLedgerRepository extends JpaRepository<TokenLedgerJpaEntity, Long> {
 
-	boolean existsByTransactionUuid(UUID transactionUuid);
+	boolean existsByTokenLedgerUuid(UUID tokenLedgerUuid);
 
-	Optional<TokenLedgerJpaEntity> findByTransactionUuid(UUID transactionUuid);
+	Optional<TokenLedgerJpaEntity> findByTokenLedgerUuid(UUID tokenLedgerUuid);
+
+	List<TokenLedgerJpaEntity> findByMemberUuidOrderByOccurredAtAsc(UUID memberUuid);
 
 	List<TokenLedgerJpaEntity> findByMemberUuidOrderByOccurredAtDesc(UUID memberUuid, Pageable pageable);
 
-	List<TokenLedgerJpaEntity> findByMemberUuidAndEntryTypeOrderByOccurredAtDesc(
+	List<TokenLedgerJpaEntity> findByMemberUuidAndTransactionTypeOrderByOccurredAtDesc(
 			UUID memberUuid,
-			TokenLedgerEntryType entryType,
+			TokenLedgerEntryType transactionType,
 			Pageable pageable
 	);
 }

@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,30 +21,30 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(
-		name = "token_ledger",
+		name = "token_wallet",
 		uniqueConstraints = @UniqueConstraint(
-				name = "uk_token_ledger_transaction_uuid",
-				columnNames = {"transaction_uuid"}
+				name = "uk_token_ledger_uuid",
+				columnNames = {"token_ledger_uuid"}
 		)
 )
 class TokenLedgerJpaEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ledger_id")
-	private Long ledgerId;
+	@Column(name = "token_ledger_id")
+	private Long tokenLedgerId;
 
 	@JdbcTypeCode(SqlTypes.CHAR)
-	@Column(name = "transaction_uuid", nullable = false, length = 36)
-	private UUID transactionUuid;
+	@Column(name = "token_ledger_uuid", nullable = false, length = 36)
+	private UUID tokenLedgerUuid;
 
 	@JdbcTypeCode(SqlTypes.CHAR)
 	@Column(name = "member_uuid", nullable = false, length = 36)
 	private UUID memberUuid;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "entry_type", nullable = false, length = 20)
-	private TokenLedgerEntryType entryType;
+	@Column(name = "transaction_type", nullable = false, length = 20)
+	private TokenLedgerEntryType transactionType;
 
 	@Column(name = "amount", nullable = false)
 	private long amount;
@@ -51,54 +52,60 @@ class TokenLedgerJpaEntity {
 	@Column(name = "balance_after", nullable = false)
 	private long balanceAfter;
 
-	@Column(name = "reference_type", length = 50)
-	private String referenceType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "reference_type", length = 30)
+	private TokenReferenceType referenceType;
 
-	@Column(name = "reference_uuid", length = 36)
-	private String referenceUuid;
+	@Column(name = "description", length = 500)
+	private String description;
 
 	@Column(name = "occurred_at", nullable = false)
 	private Instant occurredAt;
+
+	@Column(name = "created_at", nullable = false)
+	private Instant createdAt;
 
 	protected TokenLedgerJpaEntity() {
 	}
 
 	static TokenLedgerJpaEntity create(
-			UUID transactionUuid,
+			UUID tokenLedgerUuid,
 			UUID memberUuid,
-			TokenLedgerEntryType entryType,
+			TokenLedgerEntryType transactionType,
 			long amount,
 			long balanceAfter,
-			String referenceType,
-			String referenceUuid,
-			Instant occurredAt
+			TokenReferenceType referenceType,
+			String description,
+			Instant occurredAt,
+			Instant createdAt
 	) {
 		TokenLedgerJpaEntity entity = new TokenLedgerJpaEntity();
-		entity.transactionUuid = transactionUuid;
+		entity.tokenLedgerUuid = tokenLedgerUuid;
 		entity.memberUuid = memberUuid;
-		entity.entryType = entryType;
+		entity.transactionType = transactionType;
 		entity.amount = amount;
 		entity.balanceAfter = balanceAfter;
 		entity.referenceType = referenceType;
-		entity.referenceUuid = referenceUuid;
+		entity.description = description;
 		entity.occurredAt = occurredAt;
+		entity.createdAt = createdAt;
 		return entity;
 	}
 
-	Long getLedgerId() {
-		return ledgerId;
+	Long getTokenLedgerId() {
+		return tokenLedgerId;
 	}
 
-	UUID getTransactionUuid() {
-		return transactionUuid;
+	UUID getTokenLedgerUuid() {
+		return tokenLedgerUuid;
 	}
 
 	UUID getMemberUuid() {
 		return memberUuid;
 	}
 
-	TokenLedgerEntryType getEntryType() {
-		return entryType;
+	TokenLedgerEntryType getTransactionType() {
+		return transactionType;
 	}
 
 	long getAmount() {
@@ -109,15 +116,19 @@ class TokenLedgerJpaEntity {
 		return balanceAfter;
 	}
 
-	String getReferenceType() {
+	TokenReferenceType getReferenceType() {
 		return referenceType;
 	}
 
-	String getReferenceUuid() {
-		return referenceUuid;
+	String getDescription() {
+		return description;
 	}
 
 	Instant getOccurredAt() {
 		return occurredAt;
+	}
+
+	Instant getCreatedAt() {
+		return createdAt;
 	}
 }
