@@ -1,29 +1,4 @@
 package com.planwith.planwith_fo_token.application.port.out;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.planwith.planwith_fo_token.domain.model.TokenLedger;
-import com.planwith.planwith_fo_token.domain.model.TransactionType;
-import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
-import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
-
-public interface TokenLedgerPort {
-
-	boolean existsByTransactionUuid(TransactionUuid transactionUuid);
-
-	TokenLedger save(TokenLedger ledger);
-
-	Optional<TokenLedger> findByTransactionUuid(TransactionUuid transactionUuid);
-
-	List<TokenLedger> findByMemberUuidChronological(MemberUuid memberUuid);
-
-	List<TokenLedger> findByMemberUuid(MemberUuid memberUuid, int page, int size);
-
-	List<TokenLedger> findByMemberUuidAndEntryType(
-			MemberUuid memberUuid,
-			TransactionType transactionType,
-			int page,
-			int size
-	);
+public interface TokenLedgerPort extends LoadTokenLedgerPort, SaveTokenLedgerPort {
 }

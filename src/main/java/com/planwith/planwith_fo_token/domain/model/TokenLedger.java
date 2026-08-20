@@ -60,10 +60,34 @@ public final class TokenLedger {
 			String description,
 			Instant occurredAt
 	) {
+		return appendWithTransactionUuid(
+				new TransactionUuid(UUID.randomUUID()),
+				memberUuid,
+				transactionType,
+				tokenType,
+				amount,
+				balanceAfter,
+				referenceType,
+				description,
+				occurredAt
+		);
+	}
+
+	public static TokenLedger appendWithTransactionUuid(
+			TransactionUuid transactionUuid,
+			MemberUuid memberUuid,
+			TransactionType transactionType,
+			TokenType tokenType,
+			long amount,
+			long balanceAfter,
+			ReferenceType referenceType,
+			String description,
+			Instant occurredAt
+	) {
 		Instant now = occurredAt != null ? occurredAt : Instant.now();
 		return new TokenLedger(
 				null,
-				new TransactionUuid(UUID.randomUUID()),
+				transactionUuid,
 				memberUuid,
 				transactionType,
 				tokenType,

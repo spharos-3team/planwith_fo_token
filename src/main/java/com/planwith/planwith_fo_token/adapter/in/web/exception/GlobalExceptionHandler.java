@@ -11,8 +11,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
 
+import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+	@ExceptionHandler(InsufficientTokenBalanceException.class)
+	public ResponseEntity<ApiErrorResponse> handleInsufficientBalance(InsufficientTokenBalanceException exception) {
+		return createErrorResponse(HttpStatus.CONFLICT, "INSUFFICIENT_TOKEN_BALANCE", exception.getMessage());
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+		return createErrorResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", exception.getMessage());
+	}
 
 	@ExceptionHandler(InvalidCredentialsException.class)
 	public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException exception) {

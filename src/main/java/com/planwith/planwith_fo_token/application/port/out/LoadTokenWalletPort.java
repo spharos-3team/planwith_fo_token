@@ -3,9 +3,7 @@ package com.planwith.planwith_fo_token.application.port.out;
 import com.planwith.planwith_fo_token.domain.model.TokenWallet;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 
-public interface TokenWalletPort extends LoadTokenWalletPort {
+public interface LoadTokenWalletPort {
 
-	default TokenWallet getByMemberUuid(MemberUuid memberUuid) {
-		return load(memberUuid);
-	}
+	TokenWallet load(MemberUuid memberUuid);
 }
