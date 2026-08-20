@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_token.adapter.out.persistence.payment;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.port.out.PaymentMethodPort;
 import com.planwith.planwith_fo_token.domain.model.PaymentMethod;
+import com.planwith.planwith_fo_token.domain.model.PaymentMethodStatus;
+import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 
 @Component
 public class PaymentMethodPersistenceAdapter implements PaymentMethodPort {
@@ -35,6 +39,37 @@ public class PaymentMethodPersistenceAdapter implements PaymentMethodPort {
 	@Transactional(readOnly = true)
 	public Optional<PaymentMethod> findByUuid(UUID paymentMethodUuid) {
 		return repository.findByPaymentMethodUuid(paymentMethodUuid)
+				.map(PaymentMethodPersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<PaymentMethod> findActiveByMemberUuid(MemberUuid memberUuid) {
+		return repository.findByMemberUuidAndStatusOrderByRegisteredAtAsc(
+						memberUuid.value(),
+						PaymentMethodStatus.ACTIVE
+				).stream()
+				.map(PaymentMethodPersistenceMapper::toDomain)
+				.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<PaymentMethod> findDefaultActiveByMemberUuid(MemberUuid memberUuid) {
+		return repository.findByMemberUuidAndDefaultMethodTrueAndStatus(
+						memberUuid.value(),
+						PaymentMethodStatus.ACTIVE
+				)
+				.map(PaymentMethodPersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<PaymentMethod> findByUuidAndMemberUuid(
+			PaymentMethodUuid paymentMethodUuid,
+			MemberUuid memberUuid
+	) {
+		return repository.findByPaymentMethodUuidAndMemberUuid(paymentMethodUuid.value(), memberUuid.value())
 				.map(PaymentMethodPersistenceMapper::toDomain);
 	}
 }
