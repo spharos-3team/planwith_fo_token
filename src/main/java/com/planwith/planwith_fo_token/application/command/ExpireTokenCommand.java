@@ -5,9 +5,6 @@ import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
 public record ExpireTokenCommand(
 		TransactionUuid transactionUuid,
-		MemberUuid memberUuid,
-		long amount,
-		String referenceType,
-		String referenceUuid
+		MemberUuid memberUuid
 ) {
 }

@@ -8,6 +8,7 @@ public record ChargeTokenCommand(
 		MemberUuid memberUuid,
 		long amount,
 		String referenceType,
-		String referenceUuid
+		String referenceUuid,
+		String description
 ) {
 }

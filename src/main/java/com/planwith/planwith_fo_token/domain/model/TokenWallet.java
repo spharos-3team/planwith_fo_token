@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 import com.planwith.planwith_fo_token.domain.service.TokenPolicy;
 
 public final class TokenWallet {
@@ -45,14 +46,24 @@ public final class TokenWallet {
 			String description,
 			Instant occurredAt
 	) {
+		return grant(null, transactionType, referenceType, amount, description, occurredAt);
+	}
+
+	public TokenLedger grant(
+			TransactionUuid transactionUuid,
+			TransactionType transactionType,
+			ReferenceType referenceType,
+			long amount,
+			String description,
+			Instant occurredAt
+	) {
 		TokenType tokenType = TokenPolicy.tokenTypeOfGrant(transactionType, referenceType);
 		increase(tokenType, amount);
-		return TokenLedger.append(
-				memberUuid,
+		return appendLedger(
+				transactionUuid,
 				transactionType,
 				tokenType,
 				amount,
-				getTotalBalance(),
 				referenceType,
 				description,
 				occurredAt
@@ -65,13 +76,22 @@ public final class TokenWallet {
 			String description,
 			Instant occurredAt
 	) {
+		return use(null, amount, referenceType, description, occurredAt);
+	}
+
+	public TokenLedger use(
+			TransactionUuid transactionUuid,
+			long amount,
+			ReferenceType referenceType,
+			String description,
+			Instant occurredAt
+	) {
 		decrease(amount);
-		return TokenLedger.append(
-				memberUuid,
+		return appendLedger(
+				transactionUuid,
 				TransactionType.USE,
 				null,
 				amount,
-				getTotalBalance(),
 				referenceType,
 				description,
 				occurredAt
@@ -79,13 +99,16 @@ public final class TokenWallet {
 	}
 
 	public TokenLedger expire(Instant occurredAt) {
+		return expire(null, occurredAt);
+	}
+
+	public TokenLedger expire(TransactionUuid transactionUuid, Instant occurredAt) {
 		long expired = clearFreeBalance();
-		return TokenLedger.append(
-				memberUuid,
+		return appendLedger(
+				transactionUuid,
 				TransactionType.EXPIRE,
 				TokenType.FREE,
 				expired,
-				getTotalBalance(),
 				ReferenceType.GRADE_REWARD,
 				"FREE token monthly expiry",
 				occurredAt
@@ -204,5 +227,39 @@ public final class TokenWallet {
 		if (amount <= 0) {
 			throw new IllegalArgumentException("Token amount must be positive.");
 		}
+	}
+
+	private TokenLedger appendLedger(
+			TransactionUuid transactionUuid,
+			TransactionType transactionType,
+			TokenType tokenType,
+			long amount,
+			ReferenceType referenceType,
+			String description,
+			Instant occurredAt
+	) {
+		if (transactionUuid == null) {
+			return TokenLedger.append(
+					memberUuid,
+					transactionType,
+					tokenType,
+					amount,
+					getTotalBalance(),
+					referenceType,
+					description,
+					occurredAt
+			);
+		}
+		return TokenLedger.appendWithTransactionUuid(
+				transactionUuid,
+				memberUuid,
+				transactionType,
+				tokenType,
+				amount,
+				getTotalBalance(),
+				referenceType,
+				description,
+				occurredAt
+		);
 	}
 }
