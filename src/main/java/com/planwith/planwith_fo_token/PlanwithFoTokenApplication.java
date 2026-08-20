@@ -3,16 +3,24 @@ package com.planwith.planwith_fo_token;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.planwith.planwith_fo_token.config.AuthProperties;
 import com.planwith.planwith_fo_token.config.DeployProperties;
+import com.planwith.planwith_fo_token.config.TokenKafkaProperties;
+import com.planwith.planwith_fo_token.config.TokenOutboxProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({AuthProperties.class, DeployProperties.class})
+@EnableScheduling
+@EnableConfigurationProperties({
+		AuthProperties.class,
+		DeployProperties.class,
+		TokenKafkaProperties.class,
+		TokenOutboxProperties.class
+})
 public class PlanwithFoTokenApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PlanwithFoTokenApplication.class, args);
 	}
-
 }
