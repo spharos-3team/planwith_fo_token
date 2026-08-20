@@ -5,9 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.planwith.planwith_fo_token.application.command.GrantTokenCommand;
 import com.planwith.planwith_fo_token.application.command.HandleGradeRewardGrantedCommand;
+import com.planwith.planwith_fo_token.application.event.TokenRewardedEvent;
 import com.planwith.planwith_fo_token.application.port.in.HandleGradeRewardGrantedUseCase;
+import com.planwith.planwith_fo_token.application.port.in.command.GrantTokenUseCase;
 import com.planwith.planwith_fo_token.application.port.out.ProcessedTokenEventPort;
+import com.planwith.planwith_fo_token.domain.model.ProcessedTokenEvent;
+import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
 @Service
 public class HandleGradeRewardGrantedService implements HandleGradeRewardGrantedUseCase {
@@ -15,9 +20,14 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 	private static final Logger log = LoggerFactory.getLogger(HandleGradeRewardGrantedService.class);
 
 	private final ProcessedTokenEventPort processedTokenEventPort;
+	private final GrantTokenUseCase grantTokenUseCase;
 
-	public HandleGradeRewardGrantedService(ProcessedTokenEventPort processedTokenEventPort) {
+	public HandleGradeRewardGrantedService(
+			ProcessedTokenEventPort processedTokenEventPort,
+			GrantTokenUseCase grantTokenUseCase
+	) {
 		this.processedTokenEventPort = processedTokenEventPort;
+		this.grantTokenUseCase = grantTokenUseCase;
 	}
 
 	@Override
@@ -28,7 +38,25 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 					command.eventUuid());
 			return;
 		}
-		log.info("HandleGradeRewardGrantedService : handle : GradeRewardGranted 이벤트 수신 (보상 정책 미구현) - eventUuid={}, memberUuid={}",
-				command.eventUuid(), command.memberUuid());
+		log.info(
+				"HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 시작 - eventUuid={}, memberUuid={}",
+				command.eventUuid(),
+				command.memberUuid()
+		);
+		grantTokenUseCase.grant(GrantTokenCommand.gradeReward(
+				new TransactionUuid(command.eventUuid()),
+				command.memberUuid(),
+				command.tokenAmount(),
+				command.rewardType(),
+				"Grade reward token grant"
+		));
+		processedTokenEventPort.save(ProcessedTokenEvent.recorded(
+				command.eventUuid(),
+				command.memberUuid(),
+				TokenRewardedEvent.EVENT_TYPE,
+				command.grantedAt()
+		));
+		log.info("HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 완료 - eventUuid={}",
+				command.eventUuid());
 	}
 }

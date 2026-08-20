@@ -124,11 +124,21 @@ public class TokenCommandController {
 	}
 
 	private static GrantTokenCommand toGrantCommand(UUID memberUuid, TokenCommandRequest request) {
-		return new GrantTokenCommand(
-				new TransactionUuid(request.transactionUuid()),
-				MemberUuid.from(memberUuid.toString()),
+		MemberUuid member = MemberUuid.from(memberUuid.toString());
+		TransactionUuid transactionUuid = new TransactionUuid(request.transactionUuid());
+		if ("GRADE_REWARD".equalsIgnoreCase(request.referenceType())) {
+			return GrantTokenCommand.gradeReward(
+					transactionUuid,
+					member,
+					request.amount(),
+					request.referenceUuid(),
+					request.description()
+			);
+		}
+		return GrantTokenCommand.bonusReward(
+				transactionUuid,
+				member,
 				request.amount(),
-				request.referenceType(),
 				request.referenceUuid(),
 				request.description()
 		);
