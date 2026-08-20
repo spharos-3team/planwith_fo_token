@@ -2,26 +2,19 @@ package com.planwith.planwith_fo_token.domain.service;
 
 import java.util.List;
 
-import com.planwith.planwith_fo_token.domain.model.TokenKind;
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
-import com.planwith.planwith_fo_token.domain.model.TokenReferenceType;
+import com.planwith.planwith_fo_token.domain.model.ReferenceType;
+import com.planwith.planwith_fo_token.domain.model.TokenType;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 
 /**
- * 토큰 보관·사용 정책. 이후 기능 구현의 기준이며 ERD 테이블명과 역할을 함께 고정한다.
- *
- * <ul>
- *   <li>ERD {@code token_wallet} = Ledger (append-only 거래원장). 테이블명은 ERD를 유지한다.</li>
- *   <li>Wallet = 회원별 현재 잔액(PAID/FREE/BONUS). Ledger 재실행으로 복원한다. 별도 잔액 테이블을 두지 않는다.</li>
- *   <li>{@code token_charge} = 결제 충전 요청/결과. PAID 지급의 선행 상태다.</li>
- *   <li>{@code payment_method} = 등록 카드. Charge의 BILLING_KEY 결제에 사용한다.</li>
- * </ul>
+ * 토큰 보관·사용 정책. Domain 메서드(grant/use/expire)의 기준이다.
  */
 public final class TokenPolicy {
 
-	public static final List<TokenKind> DEDUCTION_ORDER = List.of(
-			TokenKind.FREE,
-			TokenKind.BONUS,
-			TokenKind.PAID
+	public static final List<TokenType> DEDUCTION_ORDER = List.of(
+			TokenType.FREE,
+			TokenType.BONUS,
+			TokenType.PAID
 	);
 
 	private TokenPolicy() {
@@ -39,26 +32,26 @@ public final class TokenPolicy {
 		return false;
 	}
 
-	public static boolean expiresBeforeMonthlyGrant(TokenKind kind) {
-		return kind == TokenKind.FREE;
+	public static boolean expiresBeforeMonthlyGrant(TokenType tokenType) {
+		return tokenType == TokenType.FREE;
 	}
 
 	public static boolean bonusExpiresAutomatically() {
 		return false;
 	}
 
-	public static TokenKind kindOfGrant(TokenLedgerEntryType transactionType, TokenReferenceType referenceType) {
-		if (transactionType == TokenLedgerEntryType.CHARGE) {
-			return TokenKind.PAID;
+	public static TokenType tokenTypeOfGrant(TransactionType transactionType, ReferenceType referenceType) {
+		if (transactionType == TransactionType.CHARGE) {
+			return TokenType.PAID;
 		}
-		if (transactionType == TokenLedgerEntryType.REWARD && referenceType == TokenReferenceType.GRADE_REWARD) {
-			return TokenKind.FREE;
+		if (transactionType == TransactionType.REWARD && referenceType == ReferenceType.GRADE_REWARD) {
+			return TokenType.FREE;
 		}
-		if (transactionType == TokenLedgerEntryType.REWARD) {
-			return TokenKind.BONUS;
+		if (transactionType == TransactionType.REWARD) {
+			return TokenType.BONUS;
 		}
 		throw new IllegalArgumentException(
-				"Grant kind is defined only for CHARGE/REWARD. type=" + transactionType
+				"Grant token type is defined only for CHARGE/REWARD. type=" + transactionType
 		);
 	}
 }

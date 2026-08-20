@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_token.adapter.out.persistence.payment;
 
 import com.planwith.planwith_fo_token.domain.model.PaymentMethod;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 
 final class PaymentMethodPersistenceMapper {
 
@@ -11,7 +12,7 @@ final class PaymentMethodPersistenceMapper {
 	static PaymentMethod toDomain(PaymentMethodJpaEntity entity) {
 		return PaymentMethod.restore(
 				entity.getPaymentMethodId(),
-				entity.getPaymentMethodUuid(),
+				new PaymentMethodUuid(entity.getPaymentMethodUuid()),
 				new MemberUuid(entity.getMemberUuid()),
 				entity.getBillingKey(),
 				entity.getCardName(),
@@ -24,7 +25,7 @@ final class PaymentMethodPersistenceMapper {
 
 	static PaymentMethodJpaEntity toEntity(PaymentMethod paymentMethod) {
 		return PaymentMethodJpaEntity.create(
-				paymentMethod.paymentMethodUuid(),
+				paymentMethod.paymentMethodUuid().value(),
 				paymentMethod.memberUuid().value(),
 				paymentMethod.billingKey(),
 				paymentMethod.cardName(),

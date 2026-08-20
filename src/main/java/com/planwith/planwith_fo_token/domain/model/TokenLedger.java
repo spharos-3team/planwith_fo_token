@@ -7,27 +7,29 @@ import java.util.UUID;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
-public final class TokenLedgerEntry {
+public final class TokenLedger {
 
 	private final Long tokenLedgerId;
-	private final TransactionUuid tokenLedgerUuid;
+	private final TransactionUuid transactionUuid;
 	private final MemberUuid memberUuid;
-	private final TokenLedgerEntryType transactionType;
+	private final TransactionType transactionType;
+	private final TokenType tokenType;
 	private final long amount;
 	private final long balanceAfter;
-	private final TokenReferenceType referenceType;
+	private final ReferenceType referenceType;
 	private final String description;
 	private final Instant occurredAt;
 	private final Instant createdAt;
 
-	private TokenLedgerEntry(
+	private TokenLedger(
 			Long tokenLedgerId,
-			TransactionUuid tokenLedgerUuid,
+			TransactionUuid transactionUuid,
 			MemberUuid memberUuid,
-			TokenLedgerEntryType transactionType,
+			TransactionType transactionType,
+			TokenType tokenType,
 			long amount,
 			long balanceAfter,
-			TokenReferenceType referenceType,
+			ReferenceType referenceType,
 			String description,
 			Instant occurredAt,
 			Instant createdAt
@@ -36,9 +38,10 @@ public final class TokenLedgerEntry {
 			throw new IllegalArgumentException("Ledger amount must be non-negative.");
 		}
 		this.tokenLedgerId = tokenLedgerId;
-		this.tokenLedgerUuid = Objects.requireNonNull(tokenLedgerUuid, "Token ledger UUID is required.");
+		this.transactionUuid = Objects.requireNonNull(transactionUuid, "Transaction UUID is required.");
 		this.memberUuid = Objects.requireNonNull(memberUuid, "Member UUID is required.");
 		this.transactionType = Objects.requireNonNull(transactionType, "Transaction type is required.");
+		this.tokenType = tokenType;
 		this.amount = amount;
 		this.balanceAfter = balanceAfter;
 		this.referenceType = referenceType;
@@ -47,21 +50,23 @@ public final class TokenLedgerEntry {
 		this.createdAt = Objects.requireNonNull(createdAt, "Created at is required.");
 	}
 
-	public static TokenLedgerEntry append(
+	public static TokenLedger append(
 			MemberUuid memberUuid,
-			TokenLedgerEntryType transactionType,
+			TransactionType transactionType,
+			TokenType tokenType,
 			long amount,
 			long balanceAfter,
-			TokenReferenceType referenceType,
+			ReferenceType referenceType,
 			String description,
 			Instant occurredAt
 	) {
 		Instant now = occurredAt != null ? occurredAt : Instant.now();
-		return new TokenLedgerEntry(
+		return new TokenLedger(
 				null,
 				new TransactionUuid(UUID.randomUUID()),
 				memberUuid,
 				transactionType,
+				tokenType,
 				amount,
 				balanceAfter,
 				referenceType,
@@ -71,23 +76,25 @@ public final class TokenLedgerEntry {
 		);
 	}
 
-	public static TokenLedgerEntry restore(
+	public static TokenLedger restore(
 			Long tokenLedgerId,
-			TransactionUuid tokenLedgerUuid,
+			TransactionUuid transactionUuid,
 			MemberUuid memberUuid,
-			TokenLedgerEntryType transactionType,
+			TransactionType transactionType,
+			TokenType tokenType,
 			long amount,
 			long balanceAfter,
-			TokenReferenceType referenceType,
+			ReferenceType referenceType,
 			String description,
 			Instant occurredAt,
 			Instant createdAt
 	) {
-		return new TokenLedgerEntry(
+		return new TokenLedger(
 				tokenLedgerId,
-				tokenLedgerUuid,
+				transactionUuid,
 				memberUuid,
 				transactionType,
+				tokenType,
 				amount,
 				balanceAfter,
 				referenceType,
@@ -105,24 +112,28 @@ public final class TokenLedgerEntry {
 		return tokenLedgerId;
 	}
 
-	public TransactionUuid tokenLedgerUuid() {
-		return tokenLedgerUuid;
+	public TransactionUuid transactionUuid() {
+		return transactionUuid;
 	}
 
-	public TransactionUuid transactionUuid() {
-		return tokenLedgerUuid;
+	public TransactionUuid tokenLedgerUuid() {
+		return transactionUuid;
 	}
 
 	public MemberUuid memberUuid() {
 		return memberUuid;
 	}
 
-	public TokenLedgerEntryType transactionType() {
+	public TransactionType transactionType() {
 		return transactionType;
 	}
 
-	public TokenLedgerEntryType entryType() {
+	public TransactionType entryType() {
 		return transactionType;
+	}
+
+	public TokenType tokenType() {
+		return tokenType;
 	}
 
 	public long amount() {
@@ -133,7 +144,7 @@ public final class TokenLedgerEntry {
 		return balanceAfter;
 	}
 
-	public TokenReferenceType referenceType() {
+	public ReferenceType referenceType() {
 		return referenceType;
 	}
 

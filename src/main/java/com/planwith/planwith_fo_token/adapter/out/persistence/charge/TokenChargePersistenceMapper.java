@@ -1,6 +1,9 @@
 package com.planwith.planwith_fo_token.adapter.out.persistence.charge;
 
 import com.planwith.planwith_fo_token.domain.model.TokenCharge;
+import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
 final class TokenChargePersistenceMapper {
 
@@ -10,9 +13,9 @@ final class TokenChargePersistenceMapper {
 	static TokenCharge toDomain(TokenChargeJpaEntity entity) {
 		return TokenCharge.restore(
 				entity.getChargeId(),
-				entity.getChargeUuid(),
-				entity.getWalletUuid(),
-				entity.getPaymentMethodUuid(),
+				new ChargeUuid(entity.getChargeUuid()),
+				entity.getWalletUuid() == null ? null : new TransactionUuid(entity.getWalletUuid()),
+				entity.getPaymentMethodUuid() == null ? null : new PaymentMethodUuid(entity.getPaymentMethodUuid()),
 				entity.getPaymentType(),
 				entity.getProviderPaymentId(),
 				entity.getTokenAmount(),
@@ -26,9 +29,9 @@ final class TokenChargePersistenceMapper {
 
 	static TokenChargeJpaEntity toEntity(TokenCharge charge) {
 		return TokenChargeJpaEntity.create(
-				charge.walletUuid(),
-				charge.paymentMethodUuid(),
-				charge.chargeUuid(),
+				charge.walletUuid() == null ? null : charge.walletUuid().value(),
+				charge.paymentMethodUuid() == null ? null : charge.paymentMethodUuid().value(),
+				charge.chargeUuid().value(),
 				charge.paymentType(),
 				charge.providerPaymentId(),
 				charge.tokenAmount(),

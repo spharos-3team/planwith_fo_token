@@ -3,8 +3,8 @@ package com.planwith.planwith_fo_token.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntry;
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TokenLedger;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
@@ -12,17 +12,17 @@ public interface TokenLedgerPort {
 
 	boolean existsByTransactionUuid(TransactionUuid transactionUuid);
 
-	TokenLedgerEntry save(TokenLedgerEntry entry);
+	TokenLedger save(TokenLedger ledger);
 
-	Optional<TokenLedgerEntry> findByTransactionUuid(TransactionUuid transactionUuid);
+	Optional<TokenLedger> findByTransactionUuid(TransactionUuid transactionUuid);
 
-	List<TokenLedgerEntry> findByMemberUuidChronological(MemberUuid memberUuid);
+	List<TokenLedger> findByMemberUuidChronological(MemberUuid memberUuid);
 
-	List<TokenLedgerEntry> findByMemberUuid(MemberUuid memberUuid, int page, int size);
+	List<TokenLedger> findByMemberUuid(MemberUuid memberUuid, int page, int size);
 
-	List<TokenLedgerEntry> findByMemberUuidAndEntryType(
+	List<TokenLedger> findByMemberUuidAndEntryType(
 			MemberUuid memberUuid,
-			TokenLedgerEntryType entryType,
+			TransactionType transactionType,
 			int page,
 			int size
 	);

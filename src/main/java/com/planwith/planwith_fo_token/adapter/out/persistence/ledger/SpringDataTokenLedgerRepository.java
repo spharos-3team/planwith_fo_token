@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.planwith.planwith_fo_token.domain.model.TokenLedgerEntryType;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 
 interface SpringDataTokenLedgerRepository extends JpaRepository<TokenLedgerJpaEntity, Long> {
 
@@ -21,7 +21,7 @@ interface SpringDataTokenLedgerRepository extends JpaRepository<TokenLedgerJpaEn
 
 	List<TokenLedgerJpaEntity> findByMemberUuidAndTransactionTypeOrderByOccurredAtDesc(
 			UUID memberUuid,
-			TokenLedgerEntryType transactionType,
+			TransactionType transactionType,
 			Pageable pageable
 	);
 }

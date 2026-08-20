@@ -2,14 +2,14 @@ package com.planwith.planwith_fo_token.domain.model;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 
 public final class PaymentMethod {
 
 	private final Long paymentMethodId;
-	private final UUID paymentMethodUuid;
+	private final PaymentMethodUuid paymentMethodUuid;
 	private final MemberUuid memberUuid;
 	private final String billingKey;
 	private final String cardName;
@@ -20,7 +20,7 @@ public final class PaymentMethod {
 
 	private PaymentMethod(
 			Long paymentMethodId,
-			UUID paymentMethodUuid,
+			PaymentMethodUuid paymentMethodUuid,
 			MemberUuid memberUuid,
 			String billingKey,
 			String cardName,
@@ -42,7 +42,7 @@ public final class PaymentMethod {
 
 	public static PaymentMethod restore(
 			Long paymentMethodId,
-			UUID paymentMethodUuid,
+			PaymentMethodUuid paymentMethodUuid,
 			MemberUuid memberUuid,
 			String billingKey,
 			String cardName,
@@ -68,7 +68,7 @@ public final class PaymentMethod {
 		return paymentMethodId;
 	}
 
-	public UUID paymentMethodUuid() {
+	public PaymentMethodUuid paymentMethodUuid() {
 		return paymentMethodUuid;
 	}
 

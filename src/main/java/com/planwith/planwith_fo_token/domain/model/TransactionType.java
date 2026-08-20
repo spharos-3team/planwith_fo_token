@@ -1,6 +1,6 @@
 package com.planwith.planwith_fo_token.domain.model;
 
-public enum TokenLedgerEntryType {
+public enum TransactionType {
 	CHARGE,
 	USE,
 	REWARD,

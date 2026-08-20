@@ -1,6 +1,6 @@
 package com.planwith.planwith_fo_token.domain.model;
 
-public enum TokenReferenceType {
+public enum ReferenceType {
 	PAYMENT,
 	AI_SCHEDULE,
 	IMPORT_SCHEDULE,
