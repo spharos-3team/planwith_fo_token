@@ -40,15 +40,24 @@ public class TokenQueryService implements
 	@Override
 	@Transactional(readOnly = true)
 	public TokenBalanceResult getBalance(GetTokenBalanceQuery query) {
-		log.debug("TokenQueryService : getBalance : 토큰 잔액 조회 - memberUuid={}", query.memberUuid());
+		log.info("TokenQueryService : getBalance : 토큰 잔액 조회 - memberUuid={}", query.memberUuid());
 		TokenWallet wallet = loadTokenWalletPort.load(query.memberUuid());
-		return new TokenBalanceResult(
+		TokenBalanceResult result = new TokenBalanceResult(
 				query.memberUuid(),
 				wallet.paidBalance(),
 				wallet.freeBalance(),
 				wallet.bonusBalance(),
 				wallet.totalBalance()
 		);
+		log.info(
+				"TokenQueryService : getBalance : 토큰 잔액 조회 완료 - memberUuid={}, totalBalance={}, paid={}, free={}, bonus={}",
+				query.memberUuid(),
+				result.totalBalance(),
+				result.paidBalance(),
+				result.freeBalance(),
+				result.bonusBalance()
+		);
+		return result;
 	}
 
 	@Override

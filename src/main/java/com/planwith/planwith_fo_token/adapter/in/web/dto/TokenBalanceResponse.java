@@ -1,12 +1,19 @@
 package com.planwith.planwith_fo_token.adapter.in.web.dto;
 
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({
+		"totalBalance",
+		"paidBalance",
+		"freeBalance",
+		"bonusBalance",
+		"memberUuid"
+})
 public record TokenBalanceResponse(
-		UUID memberUuid,
+		long totalBalance,
 		long paidBalance,
 		long freeBalance,
 		long bonusBalance,
-		long totalBalance
+		java.util.UUID memberUuid
 ) {
 }
