@@ -12,12 +12,13 @@ public record TokenLedgerEntryResult(
 		Long ledgerId,
 		TransactionUuid transactionUuid,
 		MemberUuid memberUuid,
-		TransactionType entryType,
+		Instant occurredAt,
+		TransactionType transactionType,
 		TokenType tokenType,
 		long amount,
+		long amountChange,
 		long balanceAfter,
-		ReferenceType referenceType,
-		String description,
-		Instant occurredAt
+		ReferenceType usagePlace,
+		String description
 ) {
 }

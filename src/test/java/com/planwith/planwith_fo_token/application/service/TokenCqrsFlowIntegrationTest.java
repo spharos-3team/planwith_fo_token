@@ -82,7 +82,7 @@ class TokenCqrsFlowIntegrationTest {
 		assertThat(balance.paidBalance()).isEqualTo(90L);
 		assertThat(balance.freeBalance()).isZero();
 
-		assertThat(getTokenLedgerQueryUseCase.getLedger(new GetTokenLedgerQuery(MEMBER, 0, 10)))
+		assertThat(getTokenLedgerQueryUseCase.getLedger(new GetTokenLedgerQuery(MEMBER, null, 0, 10)))
 				.hasSize(3);
 
 		chargeTokenUseCase.charge(new ChargeTokenCommand(
@@ -93,7 +93,7 @@ class TokenCqrsFlowIntegrationTest {
 				"payment-1",
 				"charge"
 		));
-		assertThat(getTokenLedgerQueryUseCase.getLedger(new GetTokenLedgerQuery(MEMBER, 0, 10)))
+		assertThat(getTokenLedgerQueryUseCase.getLedger(new GetTokenLedgerQuery(MEMBER, null, 0, 10)))
 				.hasSize(3);
 	}
 }
