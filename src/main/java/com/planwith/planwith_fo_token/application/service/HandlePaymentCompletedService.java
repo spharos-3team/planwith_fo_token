@@ -47,12 +47,16 @@ public class HandlePaymentCompletedService implements HandlePaymentCompletedUseC
 				command.paymentReference(),
 				"Payment completed token grant"
 		));
-		processedTokenEventPort.save(ProcessedTokenEvent.recorded(
+		boolean recorded = processedTokenEventPort.saveIdempotent(ProcessedTokenEvent.recorded(
 				command.eventUuid(),
 				command.memberUuid(),
 				TokenChargedEvent.EVENT_TYPE,
 				command.completedAt()
 		));
+		if (!recorded) {
+			log.warn("HandlePaymentCompletedService : handle : PaymentCompleted 처리 기록 경합 - eventUuid={}",
+					command.eventUuid());
+		}
 		log.info("HandlePaymentCompletedService : handle : PaymentCompleted 토큰 지급 완료 - eventUuid={}",
 				command.eventUuid());
 	}

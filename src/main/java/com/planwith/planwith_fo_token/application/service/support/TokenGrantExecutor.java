@@ -5,55 +5,40 @@ import java.time.Instant;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_token.application.command.GrantTokenCommand;
-import com.planwith.planwith_fo_token.application.port.out.LoadTokenLedgerPort;
-import com.planwith.planwith_fo_token.application.port.out.LoadTokenWalletPort;
-import com.planwith.planwith_fo_token.application.port.out.SaveTokenWalletPort;
 import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
 import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenLedger;
-import com.planwith.planwith_fo_token.domain.model.TokenWallet;
 import com.planwith.planwith_fo_token.domain.model.TransactionType;
 
 @Component
 public class TokenGrantExecutor {
 
-	private final LoadTokenWalletPort loadTokenWalletPort;
-	private final SaveTokenWalletPort saveTokenWalletPort;
-	private final LoadTokenLedgerPort loadTokenLedgerPort;
+	private final TokenWalletMutationExecutor mutationExecutor;
 	private final TokenEventOutboxPort tokenEventOutboxPort;
 
 	public TokenGrantExecutor(
-			LoadTokenWalletPort loadTokenWalletPort,
-			SaveTokenWalletPort saveTokenWalletPort,
-			LoadTokenLedgerPort loadTokenLedgerPort,
+			TokenWalletMutationExecutor mutationExecutor,
 			TokenEventOutboxPort tokenEventOutboxPort
 	) {
-		this.loadTokenWalletPort = loadTokenWalletPort;
-		this.saveTokenWalletPort = saveTokenWalletPort;
-		this.loadTokenLedgerPort = loadTokenLedgerPort;
+		this.mutationExecutor = mutationExecutor;
 		this.tokenEventOutboxPort = tokenEventOutboxPort;
 	}
 
 	public TokenLedger grant(GrantTokenCommand command) {
 		validate(command);
-		return loadTokenLedgerPort.findByTransactionUuid(command.transactionUuid())
-				.orElseGet(() -> executeNewGrant(command));
-	}
-
-	private TokenLedger executeNewGrant(GrantTokenCommand command) {
-		ReferenceType referenceType = TokenCommandSupport.parseReferenceType(command.referenceType());
-		TokenWallet wallet = loadTokenWalletPort.load(command.memberUuid());
-		TokenLedger ledger = wallet.grant(
+		return mutationExecutor.execute(
+				command.memberUuid(),
 				command.transactionUuid(),
-				command.transactionType(),
-				referenceType,
-				command.amount(),
-				TokenCommandSupport.descriptionOrDefault(command.description(), defaultDescription(command)),
-				Instant.now()
+				wallet -> wallet.grant(
+						command.transactionUuid(),
+						command.transactionType(),
+						TokenCommandSupport.parseReferenceType(command.referenceType()),
+						command.amount(),
+						TokenCommandSupport.descriptionOrDefault(command.description(), defaultDescription(command)),
+						Instant.now()
+				),
+				saved -> TokenGrantOutboxSupport.saveGrantOutbox(tokenEventOutboxPort, saved)
 		);
-		TokenLedger saved = saveTokenWalletPort.saveMutation(ledger);
-		TokenGrantOutboxSupport.saveGrantOutbox(tokenEventOutboxPort, saved);
-		return saved;
 	}
 
 	private static void validate(GrantTokenCommand command) {

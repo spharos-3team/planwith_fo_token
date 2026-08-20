@@ -7,13 +7,9 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_token.application.command.UseTokenCommand;
-import com.planwith.planwith_fo_token.application.port.out.LoadTokenLedgerPort;
-import com.planwith.planwith_fo_token.application.port.out.LoadTokenWalletPort;
-import com.planwith.planwith_fo_token.application.port.out.SaveTokenWalletPort;
 import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
 import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenLedger;
-import com.planwith.planwith_fo_token.domain.model.TokenWallet;
 
 @Component
 public class TokenUseExecutor {
@@ -24,42 +20,31 @@ public class TokenUseExecutor {
 			ReferenceType.PDF_DOWNLOAD
 	);
 
-	private final LoadTokenWalletPort loadTokenWalletPort;
-	private final SaveTokenWalletPort saveTokenWalletPort;
-	private final LoadTokenLedgerPort loadTokenLedgerPort;
+	private final TokenWalletMutationExecutor mutationExecutor;
 	private final TokenEventOutboxPort tokenEventOutboxPort;
 
 	public TokenUseExecutor(
-			LoadTokenWalletPort loadTokenWalletPort,
-			SaveTokenWalletPort saveTokenWalletPort,
-			LoadTokenLedgerPort loadTokenLedgerPort,
+			TokenWalletMutationExecutor mutationExecutor,
 			TokenEventOutboxPort tokenEventOutboxPort
 	) {
-		this.loadTokenWalletPort = loadTokenWalletPort;
-		this.saveTokenWalletPort = saveTokenWalletPort;
-		this.loadTokenLedgerPort = loadTokenLedgerPort;
+		this.mutationExecutor = mutationExecutor;
 		this.tokenEventOutboxPort = tokenEventOutboxPort;
 	}
 
 	public TokenLedger use(UseTokenCommand command) {
 		validate(command);
-		return loadTokenLedgerPort.findByTransactionUuid(command.transactionUuid())
-				.orElseGet(() -> executeNewUse(command));
-	}
-
-	private TokenLedger executeNewUse(UseTokenCommand command) {
-		ReferenceType referenceType = TokenCommandSupport.parseReferenceType(command.referenceType());
-		TokenWallet wallet = loadTokenWalletPort.load(command.memberUuid());
-		TokenLedger ledger = wallet.use(
+		return mutationExecutor.execute(
+				command.memberUuid(),
 				command.transactionUuid(),
-				command.amount(),
-				referenceType,
-				TokenCommandSupport.descriptionOrDefault(command.description(), "Token use"),
-				Instant.now()
+				wallet -> wallet.use(
+						command.transactionUuid(),
+						command.amount(),
+						TokenCommandSupport.parseReferenceType(command.referenceType()),
+						TokenCommandSupport.descriptionOrDefault(command.description(), "Token use"),
+						Instant.now()
+				),
+				saved -> TokenUseOutboxSupport.saveUseOutbox(tokenEventOutboxPort, saved)
 		);
-		TokenLedger saved = saveTokenWalletPort.saveMutation(ledger);
-		TokenUseOutboxSupport.saveUseOutbox(tokenEventOutboxPort, saved);
-		return saved;
 	}
 
 	private static void validate(UseTokenCommand command) {
