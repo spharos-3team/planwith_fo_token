@@ -5,7 +5,6 @@ import java.time.Instant;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_token.application.command.GrantTokenCommand;
-import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
 import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenLedger;
 import com.planwith.planwith_fo_token.domain.model.TransactionType;
@@ -14,14 +13,9 @@ import com.planwith.planwith_fo_token.domain.model.TransactionType;
 public class TokenGrantExecutor {
 
 	private final TokenWalletMutationExecutor mutationExecutor;
-	private final TokenEventOutboxPort tokenEventOutboxPort;
 
-	public TokenGrantExecutor(
-			TokenWalletMutationExecutor mutationExecutor,
-			TokenEventOutboxPort tokenEventOutboxPort
-	) {
+	public TokenGrantExecutor(TokenWalletMutationExecutor mutationExecutor) {
 		this.mutationExecutor = mutationExecutor;
-		this.tokenEventOutboxPort = tokenEventOutboxPort;
 	}
 
 	public TokenLedger grant(GrantTokenCommand command) {
@@ -36,8 +30,7 @@ public class TokenGrantExecutor {
 						command.amount(),
 						TokenCommandSupport.descriptionOrDefault(command.description(), defaultDescription(command)),
 						Instant.now()
-				),
-				saved -> TokenGrantOutboxSupport.saveGrantOutbox(tokenEventOutboxPort, saved)
+				)
 		);
 	}
 

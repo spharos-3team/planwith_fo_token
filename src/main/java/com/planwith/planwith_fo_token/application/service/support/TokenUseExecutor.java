@@ -7,7 +7,6 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.planwith.planwith_fo_token.application.command.UseTokenCommand;
-import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
 import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenLedger;
 
@@ -21,14 +20,9 @@ public class TokenUseExecutor {
 	);
 
 	private final TokenWalletMutationExecutor mutationExecutor;
-	private final TokenEventOutboxPort tokenEventOutboxPort;
 
-	public TokenUseExecutor(
-			TokenWalletMutationExecutor mutationExecutor,
-			TokenEventOutboxPort tokenEventOutboxPort
-	) {
+	public TokenUseExecutor(TokenWalletMutationExecutor mutationExecutor) {
 		this.mutationExecutor = mutationExecutor;
-		this.tokenEventOutboxPort = tokenEventOutboxPort;
 	}
 
 	public TokenLedger use(UseTokenCommand command) {
@@ -42,8 +36,7 @@ public class TokenUseExecutor {
 						TokenCommandSupport.parseReferenceType(command.referenceType()),
 						TokenCommandSupport.descriptionOrDefault(command.description(), "Token use"),
 						Instant.now()
-				),
-				saved -> TokenUseOutboxSupport.saveUseOutbox(tokenEventOutboxPort, saved)
+				)
 		);
 	}
 

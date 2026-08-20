@@ -85,6 +85,7 @@ public class TokenOutboxRelay {
 					)
 					.get(sendTimeoutMillis(), TimeUnit.MILLISECONDS);
 			outbox.markPublished(now);
+			repository.save(outbox);
 			log.info("TokenOutboxRelay : publish : 토큰 Outbox 발행 완료 - eventUuid={}, eventType={}",
 					outbox.eventUuid(), outbox.eventType());
 		} catch (InterruptedException exception) {
@@ -110,6 +111,7 @@ public class TokenOutboxRelay {
 	private void recordFailure(TokenOutboxJpaEntity outbox, Instant now) {
 		int nextRetryCount = outbox.retryCount() + 1;
 		outbox.recordPublishFailure(outboxProperties.nextRetryAt(now, nextRetryCount));
+		repository.save(outbox);
 	}
 
 	private String topicFor(String eventType) {
