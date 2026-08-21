@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
-
 import com.planwith.planwith_fo_token.application.exception.PaymentGatewayException;
 import com.planwith.planwith_fo_token.domain.exception.ChargeAmountMismatchException;
 import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
@@ -21,6 +20,8 @@ import com.planwith.planwith_fo_token.domain.exception.PaymentMethodNotFoundExce
 import com.planwith.planwith_fo_token.domain.exception.PaymentVerificationException;
 import com.planwith.planwith_fo_token.domain.exception.TokenChargeNotFoundException;
 import com.planwith.planwith_fo_token.domain.exception.TokenProductNotFoundException;
+import com.planwith.planwith_fo_token.domain.exception.TokenWalletNotFoundException;
+import com.planwith.planwith_fo_token.domain.exception.WalletLedgerInconsistencyException;
 
 import jakarta.persistence.OptimisticLockException;
 
@@ -32,9 +33,14 @@ public class GlobalExceptionHandler {
 		return createErrorResponse(HttpStatus.CONFLICT, "TOKEN_INSUFFICIENT", exception.getMessage());
 	}
 
+	@ExceptionHandler(TokenWalletNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleTokenWalletNotFound(TokenWalletNotFoundException exception) {
+		return createErrorResponse(HttpStatus.NOT_FOUND, "TOKEN_WALLET_NOT_FOUND", exception.getMessage());
+	}
+
 	@ExceptionHandler(DuplicateTransactionException.class)
 	public ResponseEntity<ApiErrorResponse> handleDuplicateTransaction(DuplicateTransactionException exception) {
-		return createErrorResponse(HttpStatus.CONFLICT, "DUPLICATE_IDEMPOTENCY_KEY", exception.getMessage());
+		return createErrorResponse(HttpStatus.CONFLICT, "DUPLICATE_TOKEN_TRANSACTION", exception.getMessage());
 	}
 
 	@ExceptionHandler(OptimisticLockException.class)
@@ -46,7 +52,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleInvalidPaymentMethodState(
 			InvalidPaymentMethodStateException exception
 	) {
-		return createErrorResponse(HttpStatus.CONFLICT, "INVALID_PAYMENT_METHOD_STATE", exception.getMessage());
+		return createErrorResponse(HttpStatus.CONFLICT, "PAYMENT_METHOD_NOT_ACTIVE", exception.getMessage());
 	}
 
 	@ExceptionHandler(PaymentMethodNotFoundException.class)
@@ -66,12 +72,17 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(ChargeAmountMismatchException.class)
 	public ResponseEntity<ApiErrorResponse> handleChargeAmountMismatch(ChargeAmountMismatchException exception) {
-		return createErrorResponse(HttpStatus.BAD_REQUEST, "CHARGE_AMOUNT_MISMATCH", exception.getMessage());
+		return createErrorResponse(HttpStatus.BAD_REQUEST, "PAYMENT_AMOUNT_MISMATCH", exception.getMessage());
 	}
 
 	@ExceptionHandler(PaymentVerificationException.class)
 	public ResponseEntity<ApiErrorResponse> handlePaymentVerification(PaymentVerificationException exception) {
-		return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "PAYMENT_VERIFICATION_FAILED", exception.getMessage());
+		return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "PAYMENT_FAILED", exception.getMessage());
+	}
+
+	@ExceptionHandler(PaymentGatewayException.class)
+	public ResponseEntity<ApiErrorResponse> handlePaymentGateway(PaymentGatewayException exception) {
+		return createErrorResponse(HttpStatus.BAD_GATEWAY, "PAYMENT_FAILED", exception.getMessage());
 	}
 
 	@ExceptionHandler(InvalidChargeStateException.class)
@@ -79,9 +90,11 @@ public class GlobalExceptionHandler {
 		return createErrorResponse(HttpStatus.CONFLICT, "INVALID_CHARGE_STATE", exception.getMessage());
 	}
 
-	@ExceptionHandler(PaymentGatewayException.class)
-	public ResponseEntity<ApiErrorResponse> handlePaymentGateway(PaymentGatewayException exception) {
-		return createErrorResponse(HttpStatus.BAD_GATEWAY, "PAYMENT_GATEWAY_ERROR", exception.getMessage());
+	@ExceptionHandler(WalletLedgerInconsistencyException.class)
+	public ResponseEntity<ApiErrorResponse> handleWalletLedgerInconsistency(
+			WalletLedgerInconsistencyException exception
+	) {
+		return createErrorResponse(HttpStatus.CONFLICT, "WALLET_LEDGER_INCONSISTENT", exception.getMessage());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

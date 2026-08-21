@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_token.adapter.out.persistence.charge;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.planwith.planwith_fo_token.application.port.out.TokenChargePort;
+import com.planwith.planwith_fo_token.domain.model.ChargeStatus;
 import com.planwith.planwith_fo_token.domain.model.TokenCharge;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 
@@ -76,6 +78,19 @@ public class TokenChargePersistenceAdapter implements TokenChargePort {
 	public List<TokenCharge> findByMemberUuid(MemberUuid memberUuid, int page, int size) {
 		return repository.findByMemberUuidOrderByChargedAtDesc(
 						memberUuid.value(),
+						PageRequest.of(normalizePage(page), normalizeSize(size))
+				)
+				.stream()
+				.map(TokenChargePersistenceMapper::toDomain)
+				.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TokenCharge> findStaleReadyCharges(Instant createdBefore, int page, int size) {
+		return repository.findByStatusAndCreatedAtBefore(
+						ChargeStatus.READY,
+						createdBefore,
 						PageRequest.of(normalizePage(page), normalizeSize(size))
 				)
 				.stream()

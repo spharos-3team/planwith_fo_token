@@ -90,6 +90,14 @@ token:
     backoff-initial: ${TOKEN_OUTBOX_BACKOFF_INITIAL:5s}
     backoff-multiplier: ${TOKEN_OUTBOX_BACKOFF_MULTIPLIER:2}
     backoff-max: ${TOKEN_OUTBOX_BACKOFF_MAX:5m}
+  charge:
+    reconcile:
+      enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:true}
+      batch-size: ${TOKEN_CHARGE_RECONCILE_BATCH_SIZE:50}
+      stale-after: ${TOKEN_CHARGE_RECONCILE_STALE_AFTER:5m}
+      interval: ${TOKEN_CHARGE_RECONCILE_INTERVAL:1m}
+      initial-delay: ${TOKEN_CHARGE_RECONCILE_INITIAL_DELAY:30s}
+      max-retry: ${TOKEN_CHARGE_RECONCILE_MAX_RETRY:10}
 
 portone:
   stub-enabled: ${PORTONE_STUB_ENABLED:true}
