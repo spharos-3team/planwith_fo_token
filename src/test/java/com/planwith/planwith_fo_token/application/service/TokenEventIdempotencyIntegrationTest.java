@@ -100,6 +100,8 @@ class TokenEventIdempotencyIntegrationTest {
 				eventUuid,
 				MEMBER,
 				15L,
+				"MONTHLY_FREE_TOKEN",
+				"2026-02",
 				"GOLD",
 				Instant.parse("2026-02-01T00:00:00Z")
 		);

@@ -10,6 +10,8 @@ public record HandleGradeRewardGrantedCommand(
 		MemberUuid memberUuid,
 		long tokenAmount,
 		String rewardType,
+		String rewardMonth,
+		String gradeCode,
 		Instant grantedAt
 ) {
 }

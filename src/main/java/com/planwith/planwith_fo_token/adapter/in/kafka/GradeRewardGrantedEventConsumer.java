@@ -43,13 +43,20 @@ public class GradeRewardGrantedEventConsumer {
 			if (event.eventUuid() == null || event.memberUuid() == null) {
 				throw new IllegalArgumentException("GradeRewardGranted payload is invalid.");
 			}
-			log.info("GradeRewardGrantedEventConsumer : consume : GradeRewardGranted 이벤트 수신 - eventUuid={}",
-					event.eventUuid());
+			log.info(
+					"GradeRewardGrantedEventConsumer : consume : GradeRewardGranted 이벤트 수신 - eventUuid={}, memberUuid={}, rewardMonth={}, gradeCode={}",
+					event.eventUuid(),
+					event.memberUuid(),
+					event.rewardMonth(),
+					event.gradeCode()
+			);
 			handleGradeRewardGrantedUseCase.handle(new HandleGradeRewardGrantedCommand(
 					UUID.fromString(event.eventUuid()),
 					MemberUuid.from(event.memberUuid()),
 					event.tokenAmount() != null ? event.tokenAmount() : 0L,
 					event.rewardType(),
+					event.rewardMonth(),
+					event.gradeCode(),
 					event.grantedAt()
 			));
 		} catch (JsonProcessingException | IllegalArgumentException exception) {
