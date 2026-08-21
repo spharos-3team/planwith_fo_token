@@ -20,6 +20,8 @@ import com.planwith.planwith_fo_token.domain.model.PaymentType;
 import com.planwith.planwith_fo_token.domain.model.TokenCharge;
 import com.planwith.planwith_fo_token.domain.model.TokenProduct;
 import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 import com.planwith.planwith_fo_token.domain.service.TokenProductPolicy;
 
 @Service
@@ -39,9 +41,10 @@ public class RequestTokenChargeService implements RequestTokenChargeUseCase {
 	@Transactional
 	public TokenChargeRequestResult request(RequestTokenChargeCommand command) {
 		log.info(
-				"RequestTokenChargeService : request : 토큰 충전 요청 생성 - memberUuid={}, productCode={}, paymentMethodUuid={}",
+				"RequestTokenChargeService : request : 토큰 충전 요청 생성 - memberUuid={}, productCode={}, paymentType={}, paymentMethodUuid={}",
 				command.memberUuid(),
 				command.productCode(),
+				command.paymentType(),
 				command.paymentMethodUuid()
 		);
 
@@ -61,28 +64,32 @@ public class RequestTokenChargeService implements RequestTokenChargeUseCase {
 		}
 
 		TokenProduct product = TokenProductPolicy.require(command.productCode());
-		PaymentMethod paymentMethod = paymentMethodPort.findByUuidAndMemberUuid(
-						command.paymentMethodUuid(),
-						command.memberUuid()
-				)
-				.filter(method -> method.status() == PaymentMethodStatus.ACTIVE)
-				.orElseThrow(() -> new PaymentMethodNotFoundException(
-						"Active payment method not found. paymentMethodUuid="
-								+ command.paymentMethodUuid().value()
-				));
-
 		PaymentType paymentType = command.paymentType() == null
 				? PaymentType.BILLING_KEY
 				: command.paymentType();
+
+		PaymentMethodUuid paymentMethodUuid = null;
+		String billingKey = null;
+		if (paymentType == PaymentType.BILLING_KEY) {
+			if (command.paymentMethodUuid() == null) {
+				throw new IllegalArgumentException("paymentMethodUuid is required for BILLING_KEY payment.");
+			}
+			PaymentMethod paymentMethod = requireActivePaymentMethod(
+					command.paymentMethodUuid(),
+					command.memberUuid()
+			);
+			paymentMethodUuid = paymentMethod.paymentMethodUuid();
+			billingKey = paymentMethod.billingKey();
+		}
 
 		TokenCharge charge = TokenCharge.request(
 				ChargeUuid.newId(),
 				command.memberUuid(),
 				product.code(),
 				blankToNull(command.clientRequestId()),
-				paymentMethod.paymentMethodUuid(),
+				paymentMethodUuid,
 				paymentType,
-				paymentMethod.billingKey(),
+				billingKey,
 				product.totalTokenAmount(),
 				product.salePrice(),
 				Instant.now()
@@ -109,6 +116,14 @@ public class RequestTokenChargeService implements RequestTokenChargeUseCase {
 			}
 			throw exception;
 		}
+	}
+
+	private PaymentMethod requireActivePaymentMethod(PaymentMethodUuid paymentMethodUuid, MemberUuid memberUuid) {
+		return paymentMethodPort.findByUuidAndMemberUuid(paymentMethodUuid, memberUuid)
+				.filter(method -> method.status() == PaymentMethodStatus.ACTIVE)
+				.orElseThrow(() -> new PaymentMethodNotFoundException(
+						"Active payment method not found. paymentMethodUuid=" + paymentMethodUuid.value()
+				));
 	}
 
 	private static TokenChargeRequestResult toResult(TokenCharge charge) {

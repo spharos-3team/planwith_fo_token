@@ -56,6 +56,13 @@ public class TokenChargePersistenceAdapter implements TokenChargePort {
 
 	@Override
 	@Transactional(readOnly = true)
+	public Optional<TokenCharge> findByChargeUuidAndMemberUuid(UUID chargeUuid, MemberUuid memberUuid) {
+		return repository.findByChargeUuidAndMemberUuid(chargeUuid, memberUuid.value())
+				.map(TokenChargePersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Optional<TokenCharge> findByMemberUuidAndClientRequestId(MemberUuid memberUuid, String clientRequestId) {
 		if (clientRequestId == null || clientRequestId.isBlank()) {
 			return Optional.empty();
