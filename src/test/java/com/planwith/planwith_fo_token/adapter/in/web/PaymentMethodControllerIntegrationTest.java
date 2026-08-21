@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_token.adapter.in.web;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -80,5 +81,53 @@ class PaymentMethodControllerIntegrationTest {
 						.content(body))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void setDefaultAndDeleteCompleteCardManagementScenario() throws Exception {
+		UUID firstUuid = registerCard(MEMBER, "4111111111111111", true);
+		UUID secondUuid = registerCard(MEMBER, "4222222222222222", false);
+
+		mockMvc.perform(post(
+						"/api/planwith-fo-token/members/{memberUuid}/payment-methods/{paymentMethodUuid}/default",
+						MEMBER,
+						secondUuid
+				))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paymentMethodUuid").value(secondUuid.toString()))
+				.andExpect(jsonPath("$.defaultMethod").value(true))
+				.andExpect(jsonPath("$.billingKey").doesNotExist());
+
+		mockMvc.perform(delete(
+						"/api/planwith-fo-token/members/{memberUuid}/payment-methods/{paymentMethodUuid}",
+						MEMBER,
+						secondUuid
+				))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/api/planwith-fo-token/members/{memberUuid}/payment-methods", MEMBER))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(1))
+				.andExpect(jsonPath("$[0].paymentMethodUuid").value(firstUuid.toString()))
+				.andExpect(jsonPath("$[0].defaultMethod").value(true));
+	}
+
+	private UUID registerCard(UUID memberUuid, String cardNumber, boolean defaultMethod) throws Exception {
+		String body = objectMapper.writeValueAsString(Map.of(
+				"cardNumber", cardNumber,
+				"expiryYear", "28",
+				"expiryMonth", "12",
+				"birthOrBusinessRegistrationNumber", "900101",
+				"passwordTwoDigits", "12",
+				"defaultMethod", defaultMethod
+		));
+		String response = mockMvc.perform(post("/api/planwith-fo-token/members/{memberUuid}/payment-methods", memberUuid)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(body))
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		return UUID.fromString(objectMapper.readTree(response).get("paymentMethodUuid").asText());
 	}
 }

@@ -17,9 +17,12 @@ interface SpringDataTokenLedgerRepository extends JpaRepository<TokenLedgerJpaEn
 
 	List<TokenLedgerJpaEntity> findByMemberUuidOrderByOccurredAtAsc(UUID memberUuid);
 
-	List<TokenLedgerJpaEntity> findByMemberUuidOrderByOccurredAtDesc(UUID memberUuid, Pageable pageable);
+	List<TokenLedgerJpaEntity> findByMemberUuidOrderByOccurredAtDescTokenLedgerIdDesc(
+			UUID memberUuid,
+			Pageable pageable
+	);
 
-	List<TokenLedgerJpaEntity> findByMemberUuidAndTransactionTypeOrderByOccurredAtDesc(
+	List<TokenLedgerJpaEntity> findByMemberUuidAndTransactionTypeOrderByOccurredAtDescTokenLedgerIdDesc(
 			UUID memberUuid,
 			TransactionType transactionType,
 			Pageable pageable

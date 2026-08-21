@@ -65,6 +65,35 @@ class PaymentMethodPolicyTest {
 				.isInstanceOf(InvalidPaymentMethodStateException.class);
 	}
 
+	@Test
+	void applyOnDeletePromotesOldestRemainingWhenDefaultDeleted() {
+		PaymentMethodUuid firstUuid = PaymentMethodUuid.from("22222222-2222-2222-2222-222222222222");
+		PaymentMethodUuid secondUuid = PaymentMethodUuid.from("33333333-3333-3333-3333-333333333333");
+		PaymentMethod first = PaymentMethod.register(firstUuid, MEMBER, "billing-1", "카드1", "1111", true, NOW);
+		PaymentMethod second = PaymentMethod.register(
+				secondUuid, MEMBER, "billing-2", "카드2", "2222", false, NOW.plusSeconds(60)
+		);
+
+		PaymentMethodPolicy.DeleteResult result = PaymentMethodPolicy.applyOnDelete(first, List.of(first, second));
+
+		assertThat(result.deleted().status().name()).isEqualTo("DELETED");
+		assertThat(result.deleted().defaultMethod()).isFalse();
+		assertThat(result.promotedDefault().paymentMethodUuid()).isEqualTo(secondUuid);
+		assertThat(result.promotedDefault().defaultMethod()).isTrue();
+	}
+
+	@Test
+	void applyOnDeleteLeavesNoDefaultWhenLastActiveDeleted() {
+		PaymentMethodUuid uuid = PaymentMethodUuid.from("22222222-2222-2222-2222-222222222222");
+		PaymentMethod only = PaymentMethod.register(uuid, MEMBER, "billing-1", "카드1", "1111", true, NOW);
+
+		PaymentMethodPolicy.DeleteResult result = PaymentMethodPolicy.applyOnDelete(only, List.of(only));
+
+		assertThat(result.deleted().status().name()).isEqualTo("DELETED");
+		assertThat(result.promotedDefault()).isNull();
+		assertThat(result.remainingActive()).isEmpty();
+	}
+
 	private PaymentMethod find(List<PaymentMethod> methods, PaymentMethodUuid uuid) {
 		return methods.stream()
 				.filter(method -> method.paymentMethodUuid().equals(uuid))
