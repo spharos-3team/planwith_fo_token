@@ -24,7 +24,7 @@ final class PaymentMethodPersistenceMapper {
 	}
 
 	static PaymentMethodJpaEntity toEntity(PaymentMethod paymentMethod) {
-		return PaymentMethodJpaEntity.create(
+		PaymentMethodJpaEntity entity = PaymentMethodJpaEntity.create(
 				paymentMethod.paymentMethodUuid().value(),
 				paymentMethod.memberUuid().value(),
 				paymentMethod.billingKey(),
@@ -34,5 +34,9 @@ final class PaymentMethodPersistenceMapper {
 				paymentMethod.status(),
 				paymentMethod.registeredAt()
 		);
+		if (paymentMethod.paymentMethodId() != null) {
+			entity.assignId(paymentMethod.paymentMethodId());
+		}
+		return entity;
 	}
 }

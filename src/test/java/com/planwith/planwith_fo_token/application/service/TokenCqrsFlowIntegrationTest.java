@@ -29,7 +29,7 @@ import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 @Transactional
 class TokenCqrsFlowIntegrationTest {
 
-	private static final MemberUuid MEMBER = MemberUuid.from("33333333-3333-3333-3333-333333333333");
+	private static final MemberUuid MEMBER = MemberUuid.from("c3333333-3333-3333-3333-333333333333");
 
 	@Autowired
 	private ChargeTokenUseCase chargeTokenUseCase;
@@ -48,9 +48,9 @@ class TokenCqrsFlowIntegrationTest {
 
 	@Test
 	void commandAndQueryFlowThroughPersistenceAdapters() {
-		UUID chargeTx = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-		UUID grantTx = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
-		UUID useTx = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+		UUID chargeTx = UUID.fromString("c0a11111-1111-1111-1111-111111111111");
+		UUID grantTx = UUID.fromString("c0b22222-2222-2222-2222-222222222222");
+		UUID useTx = UUID.fromString("c0c33333-3333-3333-3333-333333333333");
 
 		chargeTokenUseCase.charge(new ChargeTokenCommand(
 				new TransactionUuid(chargeTx),

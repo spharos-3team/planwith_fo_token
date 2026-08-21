@@ -85,6 +85,15 @@ class PaymentMethodJpaEntity {
 		return entity;
 	}
 
+	void assignId(Long paymentMethodId) {
+		this.paymentMethodId = paymentMethodId;
+	}
+
+	void updateMutableState(boolean defaultMethod, PaymentMethodStatus status) {
+		this.defaultMethod = defaultMethod;
+		this.status = status;
+	}
+
 	Long getPaymentMethodId() {
 		return paymentMethodId;
 	}
