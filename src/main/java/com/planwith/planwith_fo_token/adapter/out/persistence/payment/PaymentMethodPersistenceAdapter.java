@@ -29,7 +29,15 @@ public class PaymentMethodPersistenceAdapter implements PaymentMethodPort {
 	@Override
 	@Transactional
 	public PaymentMethod save(PaymentMethod paymentMethod) {
-		PaymentMethodJpaEntity saved = repository.save(PaymentMethodPersistenceMapper.toEntity(paymentMethod));
+		PaymentMethodJpaEntity entity;
+		if (paymentMethod.paymentMethodId() != null) {
+			entity = repository.findById(paymentMethod.paymentMethodId())
+					.orElseGet(() -> PaymentMethodPersistenceMapper.toEntity(paymentMethod));
+			entity.updateMutableState(paymentMethod.defaultMethod(), paymentMethod.status());
+		} else {
+			entity = PaymentMethodPersistenceMapper.toEntity(paymentMethod);
+		}
+		PaymentMethodJpaEntity saved = repository.save(entity);
 		log.debug("PaymentMethodPersistenceAdapter : save : 결제수단 저장 - paymentMethodUuid={}",
 				paymentMethod.paymentMethodUuid());
 		return PaymentMethodPersistenceMapper.toDomain(saved);

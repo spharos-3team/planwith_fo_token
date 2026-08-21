@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
 
+import com.planwith.planwith_fo_token.application.exception.PaymentGatewayException;
 import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
+import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
 
 import jakarta.persistence.OptimisticLockException;
 
@@ -32,6 +34,18 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(OptimisticLockException.class)
 	public ResponseEntity<ApiErrorResponse> handleOptimisticLock(OptimisticLockException exception) {
 		return createErrorResponse(HttpStatus.CONFLICT, "WALLET_VERSION_CONFLICT", exception.getMessage());
+	}
+
+	@ExceptionHandler(InvalidPaymentMethodStateException.class)
+	public ResponseEntity<ApiErrorResponse> handleInvalidPaymentMethodState(
+			InvalidPaymentMethodStateException exception
+	) {
+		return createErrorResponse(HttpStatus.CONFLICT, "INVALID_PAYMENT_METHOD_STATE", exception.getMessage());
+	}
+
+	@ExceptionHandler(PaymentGatewayException.class)
+	public ResponseEntity<ApiErrorResponse> handlePaymentGateway(PaymentGatewayException exception) {
+		return createErrorResponse(HttpStatus.BAD_GATEWAY, "PAYMENT_GATEWAY_ERROR", exception.getMessage());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
