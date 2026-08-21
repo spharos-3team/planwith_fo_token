@@ -19,15 +19,21 @@ import com.planwith.planwith_fo_token.adapter.in.web.dto.PayTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.RequestTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenChargeResponse;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenProductResponse;
+import com.planwith.planwith_fo_token.adapter.in.web.dto.WalletLedgerConsistencyResponse;
 import com.planwith.planwith_fo_token.application.command.ConfirmTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.command.PayTokenChargeCommand;
+import com.planwith.planwith_fo_token.application.command.ReconcileTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.command.RequestTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.port.in.command.ConfirmTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.PayTokenChargeUseCase;
+import com.planwith.planwith_fo_token.application.port.in.command.ReconcileTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.RequestTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.query.ListTokenProductsQueryUseCase;
+import com.planwith.planwith_fo_token.application.port.in.query.VerifyWalletLedgerConsistencyQueryUseCase;
 import com.planwith.planwith_fo_token.application.query.TokenChargeRequestResult;
 import com.planwith.planwith_fo_token.application.query.TokenProductResult;
+import com.planwith.planwith_fo_token.application.query.VerifyWalletLedgerConsistencyQuery;
+import com.planwith.planwith_fo_token.application.query.WalletLedgerConsistencyResult;
 import com.planwith.planwith_fo_token.domain.model.PaymentType;
 import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
@@ -43,17 +49,23 @@ public class TokenChargeController {
 	private final RequestTokenChargeUseCase requestTokenChargeUseCase;
 	private final PayTokenChargeUseCase payTokenChargeUseCase;
 	private final ConfirmTokenChargeUseCase confirmTokenChargeUseCase;
+	private final ReconcileTokenChargeUseCase reconcileTokenChargeUseCase;
+	private final VerifyWalletLedgerConsistencyQueryUseCase verifyWalletLedgerConsistencyQueryUseCase;
 
 	public TokenChargeController(
 			ListTokenProductsQueryUseCase listTokenProductsQueryUseCase,
 			RequestTokenChargeUseCase requestTokenChargeUseCase,
 			PayTokenChargeUseCase payTokenChargeUseCase,
-			ConfirmTokenChargeUseCase confirmTokenChargeUseCase
+			ConfirmTokenChargeUseCase confirmTokenChargeUseCase,
+			ReconcileTokenChargeUseCase reconcileTokenChargeUseCase,
+			VerifyWalletLedgerConsistencyQueryUseCase verifyWalletLedgerConsistencyQueryUseCase
 	) {
 		this.listTokenProductsQueryUseCase = listTokenProductsQueryUseCase;
 		this.requestTokenChargeUseCase = requestTokenChargeUseCase;
 		this.payTokenChargeUseCase = payTokenChargeUseCase;
 		this.confirmTokenChargeUseCase = confirmTokenChargeUseCase;
+		this.reconcileTokenChargeUseCase = reconcileTokenChargeUseCase;
+		this.verifyWalletLedgerConsistencyQueryUseCase = verifyWalletLedgerConsistencyQueryUseCase;
 	}
 
 	// 토큰 상품 목록 조회
@@ -144,6 +156,57 @@ public class TokenChargeController {
 				memberUuid,
 				chargeUuid,
 				response.status()
+		);
+		return response;
+	}
+
+	// 결제 성공·미지급 충전 복구
+	@PostMapping("/members/{memberUuid}/charges/{chargeUuid}/reconcile")
+	public TokenChargeResponse reconcileCharge(
+			@PathVariable UUID memberUuid,
+			@PathVariable UUID chargeUuid
+	) {
+		log.info(
+				"TokenChargeController : POST reconcileCharge : 충전 실패 복구 요청 - memberUuid={}, chargeUuid={}",
+				memberUuid,
+				chargeUuid
+		);
+		TokenChargeResponse response = toChargeResponse(reconcileTokenChargeUseCase.reconcile(
+				new ReconcileTokenChargeCommand(
+						MemberUuid.from(memberUuid.toString()),
+						new ChargeUuid(chargeUuid)
+				)
+		));
+		log.info(
+				"TokenChargeController : POST reconcileCharge : 충전 실패 복구 완료 - memberUuid={}, chargeUuid={}, status={}",
+				memberUuid,
+				chargeUuid,
+				response.status()
+		);
+		return response;
+	}
+
+	// Wallet-Ledger 정합성 검증
+	@GetMapping("/members/{memberUuid}/consistency/wallet-ledger")
+	public WalletLedgerConsistencyResponse verifyWalletLedgerConsistency(@PathVariable UUID memberUuid) {
+		log.info(
+				"TokenChargeController : GET verifyWalletLedgerConsistency : Wallet-Ledger 정합성 검증 요청 - memberUuid={}",
+				memberUuid
+		);
+		WalletLedgerConsistencyResult result = verifyWalletLedgerConsistencyQueryUseCase.verify(
+				new VerifyWalletLedgerConsistencyQuery(MemberUuid.from(memberUuid.toString()))
+		);
+		WalletLedgerConsistencyResponse response = new WalletLedgerConsistencyResponse(
+				result.memberUuid(),
+				result.consistent(),
+				result.walletTotalBalance(),
+				result.ledgerBalanceAfter(),
+				result.ledgerCount()
+		);
+		log.info(
+				"TokenChargeController : GET verifyWalletLedgerConsistency : Wallet-Ledger 정합성 검증 완료 - memberUuid={}, consistent={}",
+				memberUuid,
+				response.consistent()
 		);
 		return response;
 	}

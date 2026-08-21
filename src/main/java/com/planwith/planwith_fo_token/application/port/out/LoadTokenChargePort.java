@@ -1,5 +1,6 @@
 package com.planwith.planwith_fo_token.application.port.out;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +17,6 @@ public interface LoadTokenChargePort {
 	Optional<TokenCharge> findByMemberUuidAndClientRequestId(MemberUuid memberUuid, String clientRequestId);
 
 	List<TokenCharge> findByMemberUuid(MemberUuid memberUuid, int page, int size);
+
+	List<TokenCharge> findStaleReadyCharges(Instant createdBefore, int page, int size);
 }

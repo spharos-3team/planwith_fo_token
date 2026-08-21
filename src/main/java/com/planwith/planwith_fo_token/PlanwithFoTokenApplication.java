@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import com.planwith.planwith_fo_token.config.AuthProperties;
 import com.planwith.planwith_fo_token.config.DeployProperties;
 import com.planwith.planwith_fo_token.config.PortOneProperties;
+import com.planwith.planwith_fo_token.config.TokenChargeReconcileProperties;
 import com.planwith.planwith_fo_token.config.TokenKafkaProperties;
 import com.planwith.planwith_fo_token.config.TokenOutboxProperties;
 
@@ -18,7 +19,8 @@ import com.planwith.planwith_fo_token.config.TokenOutboxProperties;
 		DeployProperties.class,
 		PortOneProperties.class,
 		TokenKafkaProperties.class,
-		TokenOutboxProperties.class
+		TokenOutboxProperties.class,
+		TokenChargeReconcileProperties.class
 })
 public class PlanwithFoTokenApplication {
 

@@ -31,6 +31,9 @@ token:
     consumer-enabled: false
   outbox:
     enabled: false
+  charge:
+    reconcile:
+      enabled: false
 
 portone:
   stub-enabled: false
