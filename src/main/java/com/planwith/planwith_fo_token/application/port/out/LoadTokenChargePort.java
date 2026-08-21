@@ -11,5 +11,7 @@ public interface LoadTokenChargePort {
 
 	Optional<TokenCharge> findByChargeUuid(UUID chargeUuid);
 
+	Optional<TokenCharge> findByMemberUuidAndClientRequestId(MemberUuid memberUuid, String clientRequestId);
+
 	List<TokenCharge> findByMemberUuid(MemberUuid memberUuid, int page, int size);
 }

@@ -28,7 +28,20 @@ public class TokenChargePersistenceAdapter implements TokenChargePort {
 	@Override
 	@Transactional
 	public TokenCharge save(TokenCharge charge) {
-		TokenChargeJpaEntity saved = repository.save(TokenChargePersistenceMapper.toEntity(charge));
+		TokenChargeJpaEntity entity;
+		if (charge.chargeId() != null) {
+			entity = repository.findById(charge.chargeId())
+					.orElseGet(() -> TokenChargePersistenceMapper.toEntity(charge));
+			entity.updateMutableState(
+					charge.walletUuid() == null ? null : charge.walletUuid().value(),
+					charge.providerPaymentId(),
+					charge.status(),
+					charge.chargedAt()
+			);
+		} else {
+			entity = TokenChargePersistenceMapper.toEntity(charge);
+		}
+		TokenChargeJpaEntity saved = repository.save(entity);
 		log.debug("TokenChargePersistenceAdapter : save : 충전 요청 저장 - chargeUuid={}, status={}",
 				charge.chargeUuid(), charge.status());
 		return TokenChargePersistenceMapper.toDomain(saved);
@@ -38,6 +51,16 @@ public class TokenChargePersistenceAdapter implements TokenChargePort {
 	@Transactional(readOnly = true)
 	public Optional<TokenCharge> findByChargeUuid(UUID chargeUuid) {
 		return repository.findByChargeUuid(chargeUuid)
+				.map(TokenChargePersistenceMapper::toDomain);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<TokenCharge> findByMemberUuidAndClientRequestId(MemberUuid memberUuid, String clientRequestId) {
+		if (clientRequestId == null || clientRequestId.isBlank()) {
+			return Optional.empty();
+		}
+		return repository.findByMemberUuidAndClientRequestId(memberUuid.value(), clientRequestId)
 				.map(TokenChargePersistenceMapper::toDomain);
 	}
 

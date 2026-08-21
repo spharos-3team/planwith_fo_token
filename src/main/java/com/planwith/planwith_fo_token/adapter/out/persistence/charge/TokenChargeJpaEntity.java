@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.planwith.planwith_fo_token.domain.model.ChargeStatus;
 import com.planwith.planwith_fo_token.domain.model.PaymentType;
+import com.planwith.planwith_fo_token.domain.model.TokenProductCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,10 +23,13 @@ import jakarta.persistence.UniqueConstraint;
 @Entity
 @Table(
 		name = "token_charge",
-		uniqueConstraints = @UniqueConstraint(
-				name = "uk_token_charge_uuid",
-				columnNames = {"charge_uuid"}
-		)
+		uniqueConstraints = {
+				@UniqueConstraint(name = "uk_token_charge_uuid", columnNames = {"charge_uuid"}),
+				@UniqueConstraint(
+						name = "uk_token_charge_member_client_request",
+						columnNames = {"member_uuid", "client_request_id"}
+				)
+		}
 )
 class TokenChargeJpaEntity {
 
@@ -33,6 +37,17 @@ class TokenChargeJpaEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "charge_id")
 	private Long chargeId;
+
+	@JdbcTypeCode(SqlTypes.CHAR)
+	@Column(name = "member_uuid", length = 36)
+	private UUID memberUuid;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "product_code", length = 20)
+	private TokenProductCode productCode;
+
+	@Column(name = "client_request_id", length = 100)
+	private String clientRequestId;
 
 	@JdbcTypeCode(SqlTypes.CHAR)
 	@Column(name = "wallet_uuid", length = 36)
@@ -76,6 +91,9 @@ class TokenChargeJpaEntity {
 	}
 
 	static TokenChargeJpaEntity create(
+			UUID memberUuid,
+			TokenProductCode productCode,
+			String clientRequestId,
 			UUID walletUuid,
 			UUID paymentMethodUuid,
 			UUID chargeUuid,
@@ -89,6 +107,9 @@ class TokenChargeJpaEntity {
 			Instant createdAt
 	) {
 		TokenChargeJpaEntity entity = new TokenChargeJpaEntity();
+		entity.memberUuid = memberUuid;
+		entity.productCode = productCode;
+		entity.clientRequestId = clientRequestId;
 		entity.walletUuid = walletUuid;
 		entity.paymentMethodUuid = paymentMethodUuid;
 		entity.chargeUuid = chargeUuid;
@@ -103,7 +124,26 @@ class TokenChargeJpaEntity {
 		return entity;
 	}
 
+	void assignId(Long chargeId) {
+		this.chargeId = chargeId;
+	}
+
+	void updateMutableState(
+			UUID walletUuid,
+			String providerPaymentId,
+			ChargeStatus status,
+			Instant chargedAt
+	) {
+		this.walletUuid = walletUuid;
+		this.providerPaymentId = providerPaymentId;
+		this.status = status;
+		this.chargedAt = chargedAt;
+	}
+
 	Long getChargeId() { return chargeId; }
+	UUID getMemberUuid() { return memberUuid; }
+	TokenProductCode getProductCode() { return productCode; }
+	String getClientRequestId() { return clientRequestId; }
 	UUID getWalletUuid() { return walletUuid; }
 	UUID getPaymentMethodUuid() { return paymentMethodUuid; }
 	UUID getChargeUuid() { return chargeUuid; }

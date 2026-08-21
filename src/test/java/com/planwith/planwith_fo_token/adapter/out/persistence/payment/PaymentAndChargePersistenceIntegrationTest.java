@@ -56,6 +56,9 @@ class PaymentAndChargePersistenceIntegrationTest {
 		TokenCharge savedCharge = tokenChargePort.save(TokenCharge.restore(
 				null,
 				chargeUuid,
+				memberUuid,
+				null,
+				null,
 				ledgerUuid,
 				savedMethod.paymentMethodUuid(),
 				PaymentType.BILLING_KEY,
