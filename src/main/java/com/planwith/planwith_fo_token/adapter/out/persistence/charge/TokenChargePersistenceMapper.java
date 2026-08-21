@@ -2,6 +2,7 @@ package com.planwith.planwith_fo_token.adapter.out.persistence.charge;
 
 import com.planwith.planwith_fo_token.domain.model.TokenCharge;
 import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
+import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
 
@@ -14,6 +15,9 @@ final class TokenChargePersistenceMapper {
 		return TokenCharge.restore(
 				entity.getChargeId(),
 				new ChargeUuid(entity.getChargeUuid()),
+				entity.getMemberUuid() == null ? null : new MemberUuid(entity.getMemberUuid()),
+				entity.getProductCode(),
+				entity.getClientRequestId(),
 				entity.getWalletUuid() == null ? null : new TransactionUuid(entity.getWalletUuid()),
 				entity.getPaymentMethodUuid() == null ? null : new PaymentMethodUuid(entity.getPaymentMethodUuid()),
 				entity.getPaymentType(),
@@ -28,7 +32,10 @@ final class TokenChargePersistenceMapper {
 	}
 
 	static TokenChargeJpaEntity toEntity(TokenCharge charge) {
-		return TokenChargeJpaEntity.create(
+		TokenChargeJpaEntity entity = TokenChargeJpaEntity.create(
+				charge.memberUuid() == null ? null : charge.memberUuid().value(),
+				charge.productCode(),
+				charge.clientRequestId(),
 				charge.walletUuid() == null ? null : charge.walletUuid().value(),
 				charge.paymentMethodUuid() == null ? null : charge.paymentMethodUuid().value(),
 				charge.chargeUuid().value(),
@@ -41,5 +48,9 @@ final class TokenChargePersistenceMapper {
 				charge.chargedAt(),
 				charge.createdAt()
 		);
+		if (charge.chargeId() != null) {
+			entity.assignId(charge.chargeId());
+		}
+		return entity;
 	}
 }

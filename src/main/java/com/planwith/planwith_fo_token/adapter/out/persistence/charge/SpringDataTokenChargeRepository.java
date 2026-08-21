@@ -13,10 +13,13 @@ interface SpringDataTokenChargeRepository extends JpaRepository<TokenChargeJpaEn
 
 	Optional<TokenChargeJpaEntity> findByChargeUuid(UUID chargeUuid);
 
+	Optional<TokenChargeJpaEntity> findByMemberUuidAndClientRequestId(UUID memberUuid, String clientRequestId);
+
 	@Query("""
 			select charge
 			from TokenChargeJpaEntity charge
-			where charge.paymentMethodUuid in (
+			where charge.memberUuid = :memberUuid
+			   or charge.paymentMethodUuid in (
 				select method.paymentMethodUuid
 				from PaymentMethodJpaEntity method
 				where method.memberUuid = :memberUuid

@@ -14,8 +14,10 @@ import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
 import com.planwith.planwith_fo_token.application.exception.PaymentGatewayException;
 import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
+import com.planwith.planwith_fo_token.domain.exception.InvalidChargeStateException;
 import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
 import com.planwith.planwith_fo_token.domain.exception.PaymentMethodNotFoundException;
+import com.planwith.planwith_fo_token.domain.exception.TokenProductNotFoundException;
 
 import jakarta.persistence.OptimisticLockException;
 
@@ -47,6 +49,16 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(PaymentMethodNotFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handlePaymentMethodNotFound(PaymentMethodNotFoundException exception) {
 		return createErrorResponse(HttpStatus.NOT_FOUND, "PAYMENT_METHOD_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(TokenProductNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleTokenProductNotFound(TokenProductNotFoundException exception) {
+		return createErrorResponse(HttpStatus.NOT_FOUND, "TOKEN_PRODUCT_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(InvalidChargeStateException.class)
+	public ResponseEntity<ApiErrorResponse> handleInvalidChargeState(InvalidChargeStateException exception) {
+		return createErrorResponse(HttpStatus.CONFLICT, "INVALID_CHARGE_STATE", exception.getMessage());
 	}
 
 	@ExceptionHandler(PaymentGatewayException.class)

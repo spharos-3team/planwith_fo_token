@@ -121,6 +121,9 @@ class TokenHistoryQueryControllerIntegrationTest {
 		tokenChargePort.save(TokenCharge.restore(
 				null,
 				ChargeUuid.from("b2222222-2222-2222-2222-222222222222"),
+				MEMBER_UUID,
+				null,
+				null,
 				TransactionUuid.from("b3333333-3333-3333-3333-333333333333"),
 				paymentMethodUuid,
 				PaymentType.BILLING_KEY,
