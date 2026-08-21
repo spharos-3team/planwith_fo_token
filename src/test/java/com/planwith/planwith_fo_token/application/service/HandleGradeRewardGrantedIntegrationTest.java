@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_token.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ import com.planwith.planwith_fo_token.application.port.in.query.GetTokenLedgerQu
 import com.planwith.planwith_fo_token.application.port.out.GradeMonthlyTokenGrantPort;
 import com.planwith.planwith_fo_token.application.query.GetTokenBalanceQuery;
 import com.planwith.planwith_fo_token.application.query.GetTokenLedgerQuery;
+import com.planwith.planwith_fo_token.application.query.TokenLedgerEntryResult;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 
 @SpringBootTest
@@ -68,7 +71,7 @@ class HandleGradeRewardGrantedIntegrationTest {
 	}
 
 	@Test
-	void differentMonthsCanGrantSeparately() {
+	void differentMonthsExpirePreviousFreeThenGrantNewMonth() {
 		handleGradeRewardGrantedUseCase.handle(new HandleGradeRewardGrantedCommand(
 				UUID.fromString("e3333333-3333-3333-3333-333333333333"),
 				MEMBER,
@@ -89,8 +92,16 @@ class HandleGradeRewardGrantedIntegrationTest {
 		));
 
 		assertThat(getTokenBalanceQueryUseCase.getBalance(new GetTokenBalanceQuery(MEMBER)).freeBalance())
-				.isEqualTo(25L);
-		assertThat(getTokenLedgerQueryUseCase.getLedger(new GetTokenLedgerQuery(MEMBER, null, 0, 10)))
-				.hasSize(2);
+				.isEqualTo(15L);
+		List<TokenLedgerEntryResult> ledger = getTokenLedgerQueryUseCase.getLedger(
+				new GetTokenLedgerQuery(MEMBER, null, 0, 10)
+		);
+		assertThat(ledger).hasSize(3);
+		assertThat(ledger).extracting(TokenLedgerEntryResult::transactionType)
+				.containsExactly(
+						TransactionType.REWARD,
+						TransactionType.EXPIRE,
+						TransactionType.REWARD
+				);
 	}
 }

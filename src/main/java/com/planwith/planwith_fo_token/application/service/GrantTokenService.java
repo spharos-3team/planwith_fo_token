@@ -8,7 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.planwith.planwith_fo_token.application.command.GrantTokenCommand;
 import com.planwith.planwith_fo_token.application.port.in.command.GrantTokenUseCase;
 import com.planwith.planwith_fo_token.application.service.support.TokenGrantExecutor;
+import com.planwith.planwith_fo_token.domain.model.ReferenceType;
 import com.planwith.planwith_fo_token.domain.model.TokenLedger;
+import com.planwith.planwith_fo_token.domain.model.TransactionType;
+import com.planwith.planwith_fo_token.domain.service.TokenPolicy;
 
 @Service
 public class GrantTokenService implements GrantTokenUseCase {
@@ -24,13 +27,26 @@ public class GrantTokenService implements GrantTokenUseCase {
 	@Override
 	@Transactional
 	public void grant(GrantTokenCommand command) {
-		log.info(
-				"GrantTokenService : grant : 토큰 지급 요청 - memberUuid={}, transactionUuid={}, type={}, amount={}",
-				command.memberUuid(),
-				command.transactionUuid(),
-				command.transactionType(),
-				command.amount()
-		);
+		boolean bonusGrant = command.transactionType() == TransactionType.REWARD
+				&& (command.referenceType() == null
+				|| !ReferenceType.GRADE_REWARD.name().equalsIgnoreCase(command.referenceType()));
+		if (bonusGrant) {
+			log.info(
+					"GrantTokenService : grant : BONUS 토큰 지급 요청 - memberUuid={}, transactionUuid={}, amount={}, autoExpire={}",
+					command.memberUuid(),
+					command.transactionUuid(),
+					command.amount(),
+					TokenPolicy.bonusExpiresAutomatically()
+			);
+		} else {
+			log.info(
+					"GrantTokenService : grant : 토큰 지급 요청 - memberUuid={}, transactionUuid={}, type={}, amount={}",
+					command.memberUuid(),
+					command.transactionUuid(),
+					command.transactionType(),
+					command.amount()
+			);
+		}
 		TokenLedger ledger = tokenGrantExecutor.grant(command);
 		log.info(
 				"GrantTokenService : grant : 토큰 지급 완료 - memberUuid={}, balanceAfter={}, tokenType={}",

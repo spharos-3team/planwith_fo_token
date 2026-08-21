@@ -26,6 +26,10 @@ class TokenPolicyAndReconstructorTest {
 				.isEqualTo(TokenType.FREE);
 		assertThat(TokenPolicy.tokenTypeOfGrant(TransactionType.REWARD, null))
 				.isEqualTo(TokenType.BONUS);
+		assertThat(TokenPolicy.expiresBeforeMonthlyGrant(TokenType.FREE)).isTrue();
+		assertThat(TokenPolicy.bonusExpiresAutomatically()).isFalse();
+		assertThat(TokenPolicy.shouldAutoExpire(TokenType.BONUS)).isFalse();
+		assertThat(TokenPolicy.shouldAutoExpire(TokenType.FREE)).isTrue();
 	}
 
 	@Test

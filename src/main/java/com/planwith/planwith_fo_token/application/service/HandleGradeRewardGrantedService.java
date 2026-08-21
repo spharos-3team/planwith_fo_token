@@ -7,16 +7,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.planwith.planwith_fo_token.application.command.ExpireTokenCommand;
 import com.planwith.planwith_fo_token.application.command.GrantTokenCommand;
 import com.planwith.planwith_fo_token.application.command.HandleGradeRewardGrantedCommand;
 import com.planwith.planwith_fo_token.application.event.TokenRewardedEvent;
 import com.planwith.planwith_fo_token.application.port.in.HandleGradeRewardGrantedUseCase;
+import com.planwith.planwith_fo_token.application.port.in.command.ExpireTokenUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.GrantTokenUseCase;
 import com.planwith.planwith_fo_token.application.port.out.GradeMonthlyTokenGrantPort;
 import com.planwith.planwith_fo_token.application.port.out.ProcessedTokenEventPort;
 import com.planwith.planwith_fo_token.domain.model.GradeMonthlyTokenGrant;
 import com.planwith.planwith_fo_token.domain.model.ProcessedTokenEvent;
+import com.planwith.planwith_fo_token.domain.model.TokenType;
 import com.planwith.planwith_fo_token.domain.model.vo.TransactionUuid;
+import com.planwith.planwith_fo_token.domain.service.TokenPolicy;
 
 @Service
 public class HandleGradeRewardGrantedService implements HandleGradeRewardGrantedUseCase {
@@ -26,15 +30,18 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 
 	private final ProcessedTokenEventPort processedTokenEventPort;
 	private final GradeMonthlyTokenGrantPort gradeMonthlyTokenGrantPort;
+	private final ExpireTokenUseCase expireTokenUseCase;
 	private final GrantTokenUseCase grantTokenUseCase;
 
 	public HandleGradeRewardGrantedService(
 			ProcessedTokenEventPort processedTokenEventPort,
 			GradeMonthlyTokenGrantPort gradeMonthlyTokenGrantPort,
+			ExpireTokenUseCase expireTokenUseCase,
 			GrantTokenUseCase grantTokenUseCase
 	) {
 		this.processedTokenEventPort = processedTokenEventPort;
 		this.gradeMonthlyTokenGrantPort = gradeMonthlyTokenGrantPort;
+		this.expireTokenUseCase = expireTokenUseCase;
 		this.grantTokenUseCase = grantTokenUseCase;
 	}
 
@@ -76,11 +83,25 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 			);
 		}
 
-		TransactionUuid ledgerTransactionUuid = GradeMonthlyTokenGrant.ledgerTransactionUuidOf(
+		TransactionUuid expireTransactionUuid = GradeMonthlyTokenGrant.expireLedgerTransactionUuidOf(
+				command.memberUuid(),
+				rewardMonth
+		);
+		TransactionUuid grantTransactionUuid = GradeMonthlyTokenGrant.ledgerTransactionUuidOf(
 				command.memberUuid(),
 				rewardMonth
 		);
 		Instant grantedAt = command.grantedAt() == null ? Instant.now() : command.grantedAt();
+
+		if (TokenPolicy.expiresBeforeMonthlyGrant(TokenType.FREE)) {
+			log.info(
+					"HandleGradeRewardGrantedService : handle : 월간 FREE 만료 후 등급 토큰 지급 시작 - eventUuid={}, memberUuid={}, rewardMonth={}",
+					command.eventUuid(),
+					command.memberUuid(),
+					rewardMonth
+			);
+			expireTokenUseCase.expire(new ExpireTokenCommand(expireTransactionUuid, command.memberUuid()));
+		}
 
 		log.info(
 				"HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 시작 - eventUuid={}, memberUuid={}, rewardMonth={}, gradeCode={}, tokenAmount={}",
@@ -92,7 +113,7 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 		);
 
 		grantTokenUseCase.grant(GrantTokenCommand.gradeReward(
-				ledgerTransactionUuid,
+				grantTransactionUuid,
 				command.memberUuid(),
 				command.tokenAmount(),
 				rewardMonth,
@@ -119,11 +140,12 @@ public class HandleGradeRewardGrantedService implements HandleGradeRewardGranted
 
 		recordProcessedEvent(command);
 		log.info(
-				"HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 완료 - eventUuid={}, memberUuid={}, rewardMonth={}, ledgerTransactionUuid={}",
+				"HandleGradeRewardGrantedService : handle : 등급 무료 토큰 지급 완료 - eventUuid={}, memberUuid={}, rewardMonth={}, expireTransactionUuid={}, grantTransactionUuid={}",
 				command.eventUuid(),
 				command.memberUuid(),
 				rewardMonth,
-				ledgerTransactionUuid
+				expireTransactionUuid,
+				grantTransactionUuid
 		);
 	}
 
