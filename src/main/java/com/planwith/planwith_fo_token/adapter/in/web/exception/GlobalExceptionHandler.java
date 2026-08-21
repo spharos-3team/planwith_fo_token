@@ -18,6 +18,7 @@ import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceE
 import com.planwith.planwith_fo_token.domain.exception.InvalidChargeStateException;
 import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
 import com.planwith.planwith_fo_token.domain.exception.PaymentMethodNotFoundException;
+import com.planwith.planwith_fo_token.domain.exception.PaymentVerificationException;
 import com.planwith.planwith_fo_token.domain.exception.TokenChargeNotFoundException;
 import com.planwith.planwith_fo_token.domain.exception.TokenProductNotFoundException;
 
@@ -66,6 +67,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ChargeAmountMismatchException.class)
 	public ResponseEntity<ApiErrorResponse> handleChargeAmountMismatch(ChargeAmountMismatchException exception) {
 		return createErrorResponse(HttpStatus.BAD_REQUEST, "CHARGE_AMOUNT_MISMATCH", exception.getMessage());
+	}
+
+	@ExceptionHandler(PaymentVerificationException.class)
+	public ResponseEntity<ApiErrorResponse> handlePaymentVerification(PaymentVerificationException exception) {
+		return createErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, "PAYMENT_VERIFICATION_FAILED", exception.getMessage());
 	}
 
 	@ExceptionHandler(InvalidChargeStateException.class)

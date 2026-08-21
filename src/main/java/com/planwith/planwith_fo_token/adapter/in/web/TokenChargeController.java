@@ -14,12 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.planwith.planwith_fo_token.adapter.in.web.dto.ConfirmTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.PayTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.RequestTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenChargeResponse;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenProductResponse;
+import com.planwith.planwith_fo_token.application.command.ConfirmTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.command.PayTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.command.RequestTokenChargeCommand;
+import com.planwith.planwith_fo_token.application.port.in.command.ConfirmTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.PayTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.RequestTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.query.ListTokenProductsQueryUseCase;
@@ -39,15 +42,18 @@ public class TokenChargeController {
 	private final ListTokenProductsQueryUseCase listTokenProductsQueryUseCase;
 	private final RequestTokenChargeUseCase requestTokenChargeUseCase;
 	private final PayTokenChargeUseCase payTokenChargeUseCase;
+	private final ConfirmTokenChargeUseCase confirmTokenChargeUseCase;
 
 	public TokenChargeController(
 			ListTokenProductsQueryUseCase listTokenProductsQueryUseCase,
 			RequestTokenChargeUseCase requestTokenChargeUseCase,
-			PayTokenChargeUseCase payTokenChargeUseCase
+			PayTokenChargeUseCase payTokenChargeUseCase,
+			ConfirmTokenChargeUseCase confirmTokenChargeUseCase
 	) {
 		this.listTokenProductsQueryUseCase = listTokenProductsQueryUseCase;
 		this.requestTokenChargeUseCase = requestTokenChargeUseCase;
 		this.payTokenChargeUseCase = payTokenChargeUseCase;
+		this.confirmTokenChargeUseCase = confirmTokenChargeUseCase;
 	}
 
 	// 토큰 상품 목록 조회
@@ -108,6 +114,33 @@ public class TokenChargeController {
 		)));
 		log.info(
 				"TokenChargeController : POST payCharge : 토큰 충전 결제 완료 - memberUuid={}, chargeUuid={}, status={}",
+				memberUuid,
+				chargeUuid,
+				response.status()
+		);
+		return response;
+	}
+
+	// 결제 검증 후 유료 토큰 지급
+	@PostMapping("/members/{memberUuid}/charges/{chargeUuid}/confirm")
+	public TokenChargeResponse confirmCharge(
+			@PathVariable UUID memberUuid,
+			@PathVariable UUID chargeUuid,
+			@RequestBody ConfirmTokenChargeRequest request
+	) {
+		log.info(
+				"TokenChargeController : POST confirmCharge : 결제 검증 및 토큰 지급 요청 - memberUuid={}, chargeUuid={}",
+				memberUuid,
+				chargeUuid
+		);
+		TokenChargeResponse response = toChargeResponse(confirmTokenChargeUseCase.confirm(new ConfirmTokenChargeCommand(
+				MemberUuid.from(memberUuid.toString()),
+				new ChargeUuid(chargeUuid),
+				request == null ? null : request.providerPaymentId(),
+				request == null ? null : request.paidAmount()
+		)));
+		log.info(
+				"TokenChargeController : POST confirmCharge : 결제 검증 및 토큰 지급 완료 - memberUuid={}, chargeUuid={}, status={}",
 				memberUuid,
 				chargeUuid,
 				response.status()

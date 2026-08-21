@@ -159,6 +159,48 @@ public final class TokenCharge {
 		);
 	}
 
+	public TokenCharge markFailed(String providerPaymentId) {
+		ensureReady("mark as failed");
+		return new TokenCharge(
+				chargeId,
+				chargeUuid,
+				memberUuid,
+				productCode,
+				clientRequestId,
+				walletUuid,
+				paymentMethodUuid,
+				paymentType,
+				providerPaymentId,
+				tokenAmount,
+				billingKey,
+				paidAmount,
+				ChargeStatus.FAILED,
+				null,
+				createdAt
+		);
+	}
+
+	public TokenCharge markCanceled(String providerPaymentId) {
+		ensureReady("mark as canceled");
+		return new TokenCharge(
+				chargeId,
+				chargeUuid,
+				memberUuid,
+				productCode,
+				clientRequestId,
+				walletUuid,
+				paymentMethodUuid,
+				paymentType,
+				providerPaymentId,
+				tokenAmount,
+				billingKey,
+				paidAmount,
+				ChargeStatus.CANCELED,
+				null,
+				createdAt
+		);
+	}
+
 	public boolean grantsPaidTokens() {
 		return status == ChargeStatus.PAID;
 	}

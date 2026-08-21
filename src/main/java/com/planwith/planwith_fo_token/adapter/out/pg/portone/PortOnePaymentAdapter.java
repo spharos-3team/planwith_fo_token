@@ -3,6 +3,7 @@ package com.planwith.planwith_fo_token.adapter.out.pg.portone;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 	private final PortOneProperties properties;
 	private final RestClient restClient;
 	private final ObjectMapper objectMapper;
+	private final ConcurrentHashMap<String, StubPaymentRecord> stubPayments = new ConcurrentHashMap<>();
 
 	public PortOnePaymentAdapter(PortOneProperties properties, ObjectMapper objectMapper) {
 		this.properties = properties;
@@ -85,7 +87,7 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 	@Override
 	public PayResult pay(PayRequest request) {
 		if (properties.isStubEnabled()) {
-			return stubPay(request.paymentId(), "PAID");
+			return stubPay(request.paymentId(), "PAID", request.totalAmount());
 		}
 		validateLiveConfiguration();
 
@@ -103,7 +105,7 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 	@Override
 	public PayResult payWithBillingKey(PayWithBillingKeyRequest request) {
 		if (properties.isStubEnabled()) {
-			return stubPay(request.paymentId(), "PAID");
+			return stubPay(request.paymentId(), "PAID", request.totalAmount());
 		}
 		validateLiveConfiguration();
 
@@ -122,7 +124,17 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 	@Override
 	public PaymentInquiryResult getPayment(String paymentId) {
 		if (properties.isStubEnabled()) {
-			return new PaymentInquiryResult(paymentId, "PAID", 0L, "stub-billing-key", Instant.now());
+			StubPaymentRecord stub = stubPayments.get(paymentId);
+			if (stub == null) {
+				return new PaymentInquiryResult(paymentId, "FAILED", 0L, null, null);
+			}
+			return new PaymentInquiryResult(
+					paymentId,
+					stub.status(),
+					stub.totalAmount(),
+					"stub-billing-key",
+					stub.paidAt()
+			);
 		}
 		validateLiveConfiguration();
 
@@ -137,9 +149,20 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 		);
 	}
 
+	/**
+	 * 테스트용: stub PG 결제 상태를 직접 등록한다.
+	 */
+	public void putStubPayment(String paymentId, String status, long totalAmount) {
+		Instant paidAt = "PAID".equalsIgnoreCase(status) ? Instant.now() : null;
+		stubPayments.put(paymentId, new StubPaymentRecord(status, totalAmount, paidAt));
+	}
+
 	@Override
 	public CancelPaymentResult cancelPayment(CancelPaymentRequest request) {
 		if (properties.isStubEnabled()) {
+			StubPaymentRecord existing = stubPayments.get(request.paymentId());
+			long amount = existing == null ? 0L : existing.totalAmount();
+			stubPayments.put(request.paymentId(), new StubPaymentRecord("CANCELLED", amount, Instant.now()));
 			return new CancelPaymentResult(request.paymentId(), "CANCELLED", Instant.now());
 		}
 		validateLiveConfiguration();
@@ -166,8 +189,13 @@ public class PortOnePaymentAdapter implements PaymentGatewayPort {
 		);
 	}
 
-	private PayResult stubPay(String paymentId, String status) {
-		return new PayResult(paymentId, status, Instant.now());
+	private PayResult stubPay(String paymentId, String status, long totalAmount) {
+		Instant paidAt = Instant.now();
+		stubPayments.put(paymentId, new StubPaymentRecord(status, totalAmount, paidAt));
+		return new PayResult(paymentId, status, paidAt);
+	}
+
+	private record StubPaymentRecord(String status, long totalAmount, Instant paidAt) {
 	}
 
 	private JsonNode post(String path, Object body) {

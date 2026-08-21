@@ -61,6 +61,8 @@ class PortOnePaymentAdapterTest {
 		assertThat(payResult.status()).isEqualTo("PAID");
 		assertThat(billingPayResult.status()).isEqualTo("PAID");
 		assertThat(inquiryResult.paymentId()).isEqualTo(paymentId);
+		assertThat(inquiryResult.status()).isEqualTo("PAID");
+		assertThat(inquiryResult.totalAmount()).isEqualTo(10000L);
 		assertThat(cancelResult.status()).isEqualTo("CANCELLED");
 	}
 

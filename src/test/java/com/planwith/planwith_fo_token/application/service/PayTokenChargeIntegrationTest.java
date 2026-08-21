@@ -70,6 +70,7 @@ class PayTokenChargeIntegrationTest {
 		TokenCharge saved = tokenChargePort.findByChargeUuid(paid.chargeUuid()).orElseThrow();
 		assertThat(saved.status()).isEqualTo(ChargeStatus.PAID);
 		assertThat(saved.walletUuid()).isNotNull();
+		assertThat(saved.providerPaymentId()).isEqualTo(paid.chargeUuid().toString());
 		assertThat(getTokenBalanceQueryUseCase.getBalance(new GetTokenBalanceQuery(MEMBER)).paidBalance())
 				.isEqualTo(60L);
 	}
