@@ -15,6 +15,7 @@ import com.planwith.planwith_fo_token.application.exception.PaymentGatewayExcept
 import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
 import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
+import com.planwith.planwith_fo_token.domain.exception.PaymentMethodNotFoundException;
 
 import jakarta.persistence.OptimisticLockException;
 
@@ -41,6 +42,11 @@ public class GlobalExceptionHandler {
 			InvalidPaymentMethodStateException exception
 	) {
 		return createErrorResponse(HttpStatus.CONFLICT, "INVALID_PAYMENT_METHOD_STATE", exception.getMessage());
+	}
+
+	@ExceptionHandler(PaymentMethodNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handlePaymentMethodNotFound(PaymentMethodNotFoundException exception) {
+		return createErrorResponse(HttpStatus.NOT_FOUND, "PAYMENT_METHOD_NOT_FOUND", exception.getMessage());
 	}
 
 	@ExceptionHandler(PaymentGatewayException.class)

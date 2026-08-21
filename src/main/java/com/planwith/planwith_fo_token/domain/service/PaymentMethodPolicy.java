@@ -64,6 +64,47 @@ public final class PaymentMethodPolicy {
 				.toList();
 	}
 
+	/**
+	 * 카드 soft-delete 후 기본 결제수단 재지정.
+	 * - 기본 카드 삭제 시 남은 ACTIVE 중 등록 시각이 가장 빠른 카드를 기본으로 승격
+	 * - 남은 ACTIVE가 없으면 기본 카드 없음
+	 */
+	public static DeleteResult applyOnDelete(PaymentMethod target, List<PaymentMethod> activeMethods) {
+		if (target.status() != PaymentMethodStatus.ACTIVE) {
+			throw new InvalidPaymentMethodStateException(
+					"Only ACTIVE payment methods can be deleted. paymentMethodUuid="
+							+ target.paymentMethodUuid().value()
+			);
+		}
+
+		boolean wasDefault = target.defaultMethod();
+		PaymentMethod deleted = target.delete();
+		List<PaymentMethod> remaining = activeMethods.stream()
+				.filter(method -> !method.paymentMethodUuid().equals(target.paymentMethodUuid()))
+				.toList();
+
+		PaymentMethod promotedDefault = null;
+		List<PaymentMethod> updatedRemaining = remaining;
+		if (wasDefault && !remaining.isEmpty()) {
+			PaymentMethod nextDefault = remaining.get(0).markAsDefault();
+			promotedDefault = nextDefault;
+			updatedRemaining = remaining.stream()
+					.map(method -> method.paymentMethodUuid().equals(nextDefault.paymentMethodUuid())
+							? nextDefault
+							: method)
+					.toList();
+		}
+
+		return new DeleteResult(deleted, promotedDefault, updatedRemaining);
+	}
+
 	public record DefaultChangeResult(List<PaymentMethod> updatedMethods) {
+	}
+
+	public record DeleteResult(
+			PaymentMethod deleted,
+			PaymentMethod promotedDefault,
+			List<PaymentMethod> remainingActive
+	) {
 	}
 }

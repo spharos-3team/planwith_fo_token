@@ -64,7 +64,7 @@ public class TokenLedgerPersistenceAdapter implements TokenLedgerPort {
 	@Override
 	@Transactional(readOnly = true)
 	public List<TokenLedger> findByMemberUuid(MemberUuid memberUuid, int page, int size) {
-		return repository.findByMemberUuidOrderByOccurredAtDesc(
+		return repository.findByMemberUuidOrderByOccurredAtDescTokenLedgerIdDesc(
 						memberUuid.value(),
 						PageRequest.of(normalizePage(page), normalizeSize(size))
 				)
@@ -81,7 +81,7 @@ public class TokenLedgerPersistenceAdapter implements TokenLedgerPort {
 			int page,
 			int size
 	) {
-		return repository.findByMemberUuidAndTransactionTypeOrderByOccurredAtDesc(
+		return repository.findByMemberUuidAndTransactionTypeOrderByOccurredAtDescTokenLedgerIdDesc(
 						memberUuid.value(),
 						transactionType,
 						PageRequest.of(normalizePage(page), normalizeSize(size))
