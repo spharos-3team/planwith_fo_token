@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,23 +40,15 @@ public class TokenOutboxRelay {
 			SpringDataTokenOutboxRepository repository,
 			TokenEventPublisher publisher,
 			TokenOutboxProperties outboxProperties,
-			TokenKafkaProperties kafkaProperties
-	) {
-		this(repository, publisher, outboxProperties, kafkaProperties, Clock.systemUTC());
-	}
-
-	TokenOutboxRelay(
-			SpringDataTokenOutboxRepository repository,
-			TokenEventPublisher publisher,
-			TokenOutboxProperties outboxProperties,
 			TokenKafkaProperties kafkaProperties,
-			Clock clock
+			ObjectProvider<Clock> clockProvider
 	) {
 		this.repository = repository;
 		this.publisher = publisher;
 		this.outboxProperties = outboxProperties;
 		this.kafkaProperties = kafkaProperties;
-		this.clock = clock;
+		Clock provided = clockProvider.getIfAvailable();
+		this.clock = provided == null ? Clock.systemUTC() : provided;
 	}
 
 	@Scheduled(

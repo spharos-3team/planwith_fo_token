@@ -8,7 +8,7 @@ spring:
     password: 1234
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   cloud:
     discovery:
       enabled: false
@@ -39,7 +39,7 @@ token:
       enabled: false
 
 portone:
-  stub-enabled: false
+  stub-enabled: true
   store-id: store-e091eba1-ca0f-4fa7-8134-0fe43e9e727e
   channel-key: channel-key-37faef63-c3a7-435f-afa1-b4dd0421860f
   api-secret: LNHflrDOCq7DYbmKUjFzVih7vj121xQdEbfBUW6FDF078hP7OSSLI6bOHzRmrb5yoNtzWdHHG0b8YUC4

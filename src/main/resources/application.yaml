@@ -29,7 +29,7 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     listener:
       ack-mode: record
-      auto-startup: ${TOKEN_KAFKA_CONSUMER_ENABLED:true}
+      auto-startup: ${TOKEN_KAFKA_CONSUMER_ENABLED:false}
 
 server:
   address: ${SERVER_ADDRESS:0.0.0.0}
@@ -71,7 +71,7 @@ app:
 
 token:
   kafka:
-    consumer-enabled: ${TOKEN_KAFKA_CONSUMER_ENABLED:true}
+    consumer-enabled: ${TOKEN_KAFKA_CONSUMER_ENABLED:false}
     topics:
       payment-completed: ${TOKEN_TOPIC_PAYMENT_COMPLETED:planwith.payment.completed}
       grade-reward-granted: ${TOKEN_TOPIC_GRADE_REWARD_GRANTED:planwith.grade.reward-granted}
@@ -81,7 +81,7 @@ token:
       token-expired: ${TOKEN_TOPIC_TOKEN_EXPIRED:planwith.token.expired}
       token-charge-failed: ${TOKEN_TOPIC_TOKEN_CHARGE_FAILED:planwith.token.charge-failed}
   outbox:
-    enabled: ${TOKEN_OUTBOX_ENABLED:true}
+    enabled: ${TOKEN_OUTBOX_ENABLED:false}
     relay-batch-size: ${TOKEN_OUTBOX_RELAY_BATCH_SIZE:50}
     relay-interval: ${TOKEN_OUTBOX_RELAY_INTERVAL:5s}
     relay-initial-delay: ${TOKEN_OUTBOX_RELAY_INITIAL_DELAY:5s}
@@ -95,7 +95,7 @@ token:
     member-uuid: ${TOKEN_MOCK_MEMBER_UUID:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa}
   charge:
     reconcile:
-      enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:true}
+      enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:false}
       batch-size: ${TOKEN_CHARGE_RECONCILE_BATCH_SIZE:50}
       stale-after: ${TOKEN_CHARGE_RECONCILE_STALE_AFTER:5m}
       interval: ${TOKEN_CHARGE_RECONCILE_INTERVAL:1m}
@@ -103,7 +103,7 @@ token:
       max-retry: ${TOKEN_CHARGE_RECONCILE_MAX_RETRY:10}
 
 portone:
-  stub-enabled: ${PORTONE_STUB_ENABLED:true}
+  stub-enabled: ${PORTONE_STUB_ENABLED:false}
   store-id: ${PORTONE_STORE_ID:}
   channel-key: ${PORTONE_CHANNEL_KEY:}
   api-secret: ${PORTONE_API_SECRET:}

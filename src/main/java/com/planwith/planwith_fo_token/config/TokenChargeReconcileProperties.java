@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "token.charge.reconcile")
 public class TokenChargeReconcileProperties {
 
-	private boolean enabled = true;
+	private boolean enabled = false;
 	private int batchSize = 50;
 	private Duration staleAfter = Duration.ofMinutes(5);
 	private Duration interval = Duration.ofMinutes(1);

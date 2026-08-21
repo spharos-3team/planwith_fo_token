@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "token.kafka")
 public class TokenKafkaProperties {
 
-	private boolean consumerEnabled = true;
+	private boolean consumerEnabled = false;
 	private Topics topics = new Topics();
 
 	public boolean isConsumerEnabled() {

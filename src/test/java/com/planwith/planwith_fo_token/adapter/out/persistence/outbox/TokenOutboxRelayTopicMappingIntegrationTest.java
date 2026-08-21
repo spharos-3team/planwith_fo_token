@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -74,12 +75,19 @@ class TokenOutboxRelayTopicMappingIntegrationTest {
 				publisher,
 				outboxProperties,
 				kafkaProperties,
-				Clock.fixed(now, ZoneOffset.UTC)
+				fixedClockProvider(now)
 		);
 		relay.relayUnpublishedEvents();
 
 		verify(publisher).publish(eq(expectedTopic), eq(aggregateUuid.toString()), anyString());
 		assertThat(repository.findByEventUuid(eventUuid).orElseThrow().publishedAt()).isEqualTo(now);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ObjectProvider<Clock> fixedClockProvider(Instant now) {
+		ObjectProvider<Clock> clockProvider = mock(ObjectProvider.class);
+		when(clockProvider.getIfAvailable()).thenReturn(Clock.fixed(now, ZoneOffset.UTC));
+		return clockProvider;
 	}
 
 	static Stream<Arguments> outputEvents() {

@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "token.outbox")
 public class TokenOutboxProperties {
 
-	private boolean enabled = true;
+	private boolean enabled = false;
 	private int relayBatchSize = 50;
 	private Duration sendTimeout = Duration.ofSeconds(10);
 	private int maxRetry = 10;
