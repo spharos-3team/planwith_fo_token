@@ -99,6 +99,14 @@ public final class GradeMonthlyTokenGrant {
 		return new TransactionUuid(UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8)));
 	}
 
+	/**
+	 * 월간 FREE 만료(EXPIRE)용 결정적 transactionUuid.
+	 */
+	public static TransactionUuid expireLedgerTransactionUuidOf(MemberUuid memberUuid, String rewardMonth) {
+		String key = "GRADE_MONTHLY_FREE_EXPIRE:" + memberUuid.value() + ":" + requireRewardMonth(rewardMonth);
+		return new TransactionUuid(UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8)));
+	}
+
 	public static String requireRewardMonth(String rewardMonth) {
 		if (rewardMonth == null || rewardMonth.isBlank()) {
 			throw new IllegalArgumentException("Reward month is required. format=yyyy-MM");

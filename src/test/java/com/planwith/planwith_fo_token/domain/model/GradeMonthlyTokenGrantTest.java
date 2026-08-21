@@ -20,9 +20,11 @@ class GradeMonthlyTokenGrantTest {
 		TransactionUuid first = GradeMonthlyTokenGrant.ledgerTransactionUuidOf(MEMBER, "2026-08");
 		TransactionUuid second = GradeMonthlyTokenGrant.ledgerTransactionUuidOf(MEMBER, "2026-08");
 		TransactionUuid otherMonth = GradeMonthlyTokenGrant.ledgerTransactionUuidOf(MEMBER, "2026-09");
+		TransactionUuid expire = GradeMonthlyTokenGrant.expireLedgerTransactionUuidOf(MEMBER, "2026-08");
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first).isNotEqualTo(otherMonth);
+		assertThat(expire).isNotEqualTo(first);
 	}
 
 	@Test

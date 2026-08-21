@@ -7,7 +7,12 @@ import com.planwith.planwith_fo_token.domain.model.TokenType;
 import com.planwith.planwith_fo_token.domain.model.TransactionType;
 
 /**
- * 토큰 보관·사용 정책. Domain 메서드(grant/use/expire)의 기준이다.
+ * 무료·보너스·유료 토큰 Lifecycle 정책.
+ * <ul>
+ *   <li>FREE: 월간 등급 지급 전에 기존 FREE를 EXPIRE ledger로 소멸한다.</li>
+ *   <li>BONUS (Stage 1): 자동 만료하지 않는다. 지급만 공통 grant 경로로 처리한다.</li>
+ *   <li>PAID: 만료하지 않는다.</li>
+ * </ul>
  */
 public final class TokenPolicy {
 
@@ -32,11 +37,27 @@ public final class TokenPolicy {
 		return false;
 	}
 
+	/**
+	 * 월간 FREE 신규 지급 전에 기존 FREE를 Ledger EXPIRE로 소멸할지 여부.
+	 */
 	public static boolean expiresBeforeMonthlyGrant(TokenType tokenType) {
 		return tokenType == TokenType.FREE;
 	}
 
+	/**
+	 * Stage 1: BONUS는 자동 만료하지 않는다.
+	 */
 	public static boolean bonusExpiresAutomatically() {
+		return false;
+	}
+
+	public static boolean shouldAutoExpire(TokenType tokenType) {
+		if (tokenType == TokenType.FREE) {
+			return true;
+		}
+		if (tokenType == TokenType.BONUS) {
+			return bonusExpiresAutomatically();
+		}
 		return false;
 	}
 
