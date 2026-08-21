@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -68,7 +69,7 @@ class TokenOutboxRelayIntegrationTest {
 				publisher,
 				outboxProperties,
 				kafkaProperties,
-				Clock.fixed(now, ZoneOffset.UTC)
+				fixedClockProvider(now)
 		);
 		relay.relayUnpublishedEvents();
 
@@ -105,7 +106,7 @@ class TokenOutboxRelayIntegrationTest {
 				publisher,
 				outboxProperties,
 				kafkaProperties,
-				Clock.fixed(now, ZoneOffset.UTC)
+				fixedClockProvider(now)
 		);
 		relay.relayUnpublishedEvents();
 
@@ -113,5 +114,12 @@ class TokenOutboxRelayIntegrationTest {
 		assertThat(unpublished.publishedAt()).isNull();
 		assertThat(unpublished.retryCount()).isEqualTo(1);
 		assertThat(unpublished.nextRetryAt()).isAfter(now);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ObjectProvider<Clock> fixedClockProvider(Instant now) {
+		ObjectProvider<Clock> clockProvider = mock(ObjectProvider.class);
+		when(clockProvider.getIfAvailable()).thenReturn(Clock.fixed(now, ZoneOffset.UTC));
+		return clockProvider;
 	}
 }
