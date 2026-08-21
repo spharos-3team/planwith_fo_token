@@ -33,6 +33,8 @@ token:
     consumer-enabled: false
   outbox:
     enabled: false
+  mock:
+    enabled: false
   charge:
     reconcile:
       enabled: false
