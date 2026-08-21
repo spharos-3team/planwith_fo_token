@@ -14,15 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.planwith.planwith_fo_token.adapter.in.web.dto.PayTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.RequestTokenChargeRequest;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenChargeResponse;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.TokenProductResponse;
+import com.planwith.planwith_fo_token.application.command.PayTokenChargeCommand;
 import com.planwith.planwith_fo_token.application.command.RequestTokenChargeCommand;
+import com.planwith.planwith_fo_token.application.port.in.command.PayTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.command.RequestTokenChargeUseCase;
 import com.planwith.planwith_fo_token.application.port.in.query.ListTokenProductsQueryUseCase;
 import com.planwith.planwith_fo_token.application.query.TokenChargeRequestResult;
 import com.planwith.planwith_fo_token.application.query.TokenProductResult;
 import com.planwith.planwith_fo_token.domain.model.PaymentType;
+import com.planwith.planwith_fo_token.domain.model.vo.ChargeUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.MemberUuid;
 import com.planwith.planwith_fo_token.domain.model.vo.PaymentMethodUuid;
 
@@ -34,13 +38,16 @@ public class TokenChargeController {
 
 	private final ListTokenProductsQueryUseCase listTokenProductsQueryUseCase;
 	private final RequestTokenChargeUseCase requestTokenChargeUseCase;
+	private final PayTokenChargeUseCase payTokenChargeUseCase;
 
 	public TokenChargeController(
 			ListTokenProductsQueryUseCase listTokenProductsQueryUseCase,
-			RequestTokenChargeUseCase requestTokenChargeUseCase
+			RequestTokenChargeUseCase requestTokenChargeUseCase,
+			PayTokenChargeUseCase payTokenChargeUseCase
 	) {
 		this.listTokenProductsQueryUseCase = listTokenProductsQueryUseCase;
 		this.requestTokenChargeUseCase = requestTokenChargeUseCase;
+		this.payTokenChargeUseCase = payTokenChargeUseCase;
 	}
 
 	// 토큰 상품 목록 조회
@@ -66,12 +73,13 @@ public class TokenChargeController {
 			@RequestBody RequestTokenChargeRequest request
 	) {
 		log.info(
-				"TokenChargeController : POST requestCharge : 토큰 충전 요청 생성 - memberUuid={}, productCode={}",
+				"TokenChargeController : POST requestCharge : 토큰 충전 요청 생성 - memberUuid={}, productCode={}, paymentType={}",
 				memberUuid,
-				request.productCode()
+				request.productCode(),
+				request.paymentType()
 		);
 		TokenChargeResponse response = toChargeResponse(requestTokenChargeUseCase.request(
-				toCommand(memberUuid, request)
+				toRequestCommand(memberUuid, request)
 		));
 		log.info(
 				"TokenChargeController : POST requestCharge : 토큰 충전 READY 생성 완료 - memberUuid={}, chargeUuid={}",
@@ -81,14 +89,37 @@ public class TokenChargeController {
 		return response;
 	}
 
-	private static RequestTokenChargeCommand toCommand(UUID memberUuid, RequestTokenChargeRequest request) {
+	// 토큰 충전 결제 (ONE_TIME / BILLING_KEY)
+	@PostMapping("/members/{memberUuid}/charges/{chargeUuid}/pay")
+	public TokenChargeResponse payCharge(
+			@PathVariable UUID memberUuid,
+			@PathVariable UUID chargeUuid,
+			@RequestBody(required = false) PayTokenChargeRequest request
+	) {
+		log.info(
+				"TokenChargeController : POST payCharge : 토큰 충전 결제 요청 - memberUuid={}, chargeUuid={}",
+				memberUuid,
+				chargeUuid
+		);
+		TokenChargeResponse response = toChargeResponse(payTokenChargeUseCase.pay(new PayTokenChargeCommand(
+				MemberUuid.from(memberUuid.toString()),
+				new ChargeUuid(chargeUuid),
+				request == null ? null : request.paidAmount()
+		)));
+		log.info(
+				"TokenChargeController : POST payCharge : 토큰 충전 결제 완료 - memberUuid={}, chargeUuid={}, status={}",
+				memberUuid,
+				chargeUuid,
+				response.status()
+		);
+		return response;
+	}
+
+	private static RequestTokenChargeCommand toRequestCommand(UUID memberUuid, RequestTokenChargeRequest request) {
 		if (request.productCode() == null || request.productCode().isBlank()) {
 			throw new IllegalArgumentException("productCode is required.");
 		}
-		if (request.paymentMethodUuid() == null) {
-			throw new IllegalArgumentException("paymentMethodUuid is required.");
-		}
-		PaymentType paymentType = null;
+		PaymentType paymentType = PaymentType.BILLING_KEY;
 		if (request.paymentType() != null && !request.paymentType().isBlank()) {
 			try {
 				paymentType = PaymentType.valueOf(request.paymentType().trim().toUpperCase());
@@ -96,10 +127,13 @@ public class TokenChargeController {
 				throw new IllegalArgumentException("Invalid paymentType. value=" + request.paymentType());
 			}
 		}
+		if (paymentType == PaymentType.BILLING_KEY && request.paymentMethodUuid() == null) {
+			throw new IllegalArgumentException("paymentMethodUuid is required for BILLING_KEY payment.");
+		}
 		return new RequestTokenChargeCommand(
 				MemberUuid.from(memberUuid.toString()),
 				request.productCode(),
-				new PaymentMethodUuid(request.paymentMethodUuid()),
+				request.paymentMethodUuid() == null ? null : new PaymentMethodUuid(request.paymentMethodUuid()),
 				paymentType,
 				request.clientRequestId()
 		);

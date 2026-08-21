@@ -79,6 +79,10 @@ public final class TokenCharge {
 		if (paidAmount <= 0) {
 			throw new IllegalArgumentException("Paid amount must be positive.");
 		}
+		Objects.requireNonNull(paymentType, "Payment type is required.");
+		if (paymentType == PaymentType.BILLING_KEY && paymentMethodUuid == null) {
+			throw new IllegalArgumentException("Payment method UUID is required for BILLING_KEY payment.");
+		}
 		return new TokenCharge(
 				null,
 				chargeUuid,
@@ -86,8 +90,8 @@ public final class TokenCharge {
 				Objects.requireNonNull(productCode, "Product code is required."),
 				clientRequestId,
 				null,
-				Objects.requireNonNull(paymentMethodUuid, "Payment method UUID is required."),
-				Objects.requireNonNull(paymentType, "Payment type is required."),
+				paymentMethodUuid,
+				paymentType,
 				null,
 				tokenAmount,
 				billingKey,

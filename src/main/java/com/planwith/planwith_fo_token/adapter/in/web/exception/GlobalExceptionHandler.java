@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.planwith.planwith_fo_token.adapter.in.web.dto.ApiErrorResponse;
 
 import com.planwith.planwith_fo_token.application.exception.PaymentGatewayException;
+import com.planwith.planwith_fo_token.domain.exception.ChargeAmountMismatchException;
 import com.planwith.planwith_fo_token.domain.exception.DuplicateTransactionException;
 import com.planwith.planwith_fo_token.domain.exception.InsufficientTokenBalanceException;
 import com.planwith.planwith_fo_token.domain.exception.InvalidChargeStateException;
 import com.planwith.planwith_fo_token.domain.exception.InvalidPaymentMethodStateException;
 import com.planwith.planwith_fo_token.domain.exception.PaymentMethodNotFoundException;
+import com.planwith.planwith_fo_token.domain.exception.TokenChargeNotFoundException;
 import com.planwith.planwith_fo_token.domain.exception.TokenProductNotFoundException;
 
 import jakarta.persistence.OptimisticLockException;
@@ -54,6 +56,16 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(TokenProductNotFoundException.class)
 	public ResponseEntity<ApiErrorResponse> handleTokenProductNotFound(TokenProductNotFoundException exception) {
 		return createErrorResponse(HttpStatus.NOT_FOUND, "TOKEN_PRODUCT_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(TokenChargeNotFoundException.class)
+	public ResponseEntity<ApiErrorResponse> handleTokenChargeNotFound(TokenChargeNotFoundException exception) {
+		return createErrorResponse(HttpStatus.NOT_FOUND, "TOKEN_CHARGE_NOT_FOUND", exception.getMessage());
+	}
+
+	@ExceptionHandler(ChargeAmountMismatchException.class)
+	public ResponseEntity<ApiErrorResponse> handleChargeAmountMismatch(ChargeAmountMismatchException exception) {
+		return createErrorResponse(HttpStatus.BAD_REQUEST, "CHARGE_AMOUNT_MISMATCH", exception.getMessage());
 	}
 
 	@ExceptionHandler(InvalidChargeStateException.class)
