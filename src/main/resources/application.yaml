@@ -90,6 +90,9 @@ token:
     backoff-initial: ${TOKEN_OUTBOX_BACKOFF_INITIAL:5s}
     backoff-multiplier: ${TOKEN_OUTBOX_BACKOFF_MULTIPLIER:2}
     backoff-max: ${TOKEN_OUTBOX_BACKOFF_MAX:5m}
+  mock:
+    enabled: ${TOKEN_MOCK_ENABLED:false}
+    member-uuid: ${TOKEN_MOCK_MEMBER_UUID:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa}
   charge:
     reconcile:
       enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:true}

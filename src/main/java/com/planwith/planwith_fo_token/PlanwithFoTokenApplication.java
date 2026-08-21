@@ -10,6 +10,7 @@ import com.planwith.planwith_fo_token.config.DeployProperties;
 import com.planwith.planwith_fo_token.config.PortOneProperties;
 import com.planwith.planwith_fo_token.config.TokenChargeReconcileProperties;
 import com.planwith.planwith_fo_token.config.TokenKafkaProperties;
+import com.planwith.planwith_fo_token.config.TokenMockMemberProperties;
 import com.planwith.planwith_fo_token.config.TokenOutboxProperties;
 
 @SpringBootApplication
@@ -20,7 +21,8 @@ import com.planwith.planwith_fo_token.config.TokenOutboxProperties;
 		PortOneProperties.class,
 		TokenKafkaProperties.class,
 		TokenOutboxProperties.class,
-		TokenChargeReconcileProperties.class
+		TokenChargeReconcileProperties.class,
+		TokenMockMemberProperties.class
 })
 public class PlanwithFoTokenApplication {
 
