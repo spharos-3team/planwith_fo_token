@@ -188,12 +188,18 @@ class GrantTokenIntegrationTest {
 				eventUuid,
 				MEMBER,
 				12L,
+				"MONTHLY_FREE_TOKEN",
+				"2026-02",
 				"PLATINUM",
 				java.time.Instant.parse("2026-02-01T00:00:00Z")
 		));
 
 		TokenBalanceResult balance = getTokenBalanceQueryUseCase.getBalance(new GetTokenBalanceQuery(MEMBER));
 		assertThat(balance.freeBalance()).isEqualTo(12L);
-		assertThat(loadTokenLedgerPort.findByTransactionUuid(new TransactionUuid(eventUuid))).isPresent();
+		assertThat(loadTokenLedgerPort.findByTransactionUuid(
+				com.planwith.planwith_fo_token.domain.model.GradeMonthlyTokenGrant.ledgerTransactionUuidOf(
+						MEMBER, "2026-02"
+				)
+		)).isPresent();
 	}
 }
