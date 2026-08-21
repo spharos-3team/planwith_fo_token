@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.planwith.planwith_fo_token.application.command.ChargeTokenCommand;
 import com.planwith.planwith_fo_token.application.port.in.command.ChargeTokenUseCase;
 import com.planwith.planwith_fo_token.application.port.out.TokenChargePort;
+import com.planwith.planwith_fo_token.application.port.out.TokenEventOutboxPort;
 import com.planwith.planwith_fo_token.application.port.out.payment.PaymentInquiryResult;
 import com.planwith.planwith_fo_token.application.query.TokenChargeRequestResult;
 import com.planwith.planwith_fo_token.domain.exception.ChargeAmountMismatchException;
@@ -28,13 +29,16 @@ public class PaymentVerifiedTokenGrantSupport {
 
 	private final TokenChargePort tokenChargePort;
 	private final ChargeTokenUseCase chargeTokenUseCase;
+	private final TokenEventOutboxPort tokenEventOutboxPort;
 
 	public PaymentVerifiedTokenGrantSupport(
 			TokenChargePort tokenChargePort,
-			ChargeTokenUseCase chargeTokenUseCase
+			ChargeTokenUseCase chargeTokenUseCase,
+			TokenEventOutboxPort tokenEventOutboxPort
 	) {
 		this.tokenChargePort = tokenChargePort;
 		this.chargeTokenUseCase = chargeTokenUseCase;
+		this.tokenEventOutboxPort = tokenEventOutboxPort;
 	}
 
 	public TokenChargeRequestResult verifyAndGrant(TokenCharge charge, PaymentInquiryResult inquiry) {
@@ -50,15 +54,11 @@ public class PaymentVerifiedTokenGrantSupport {
 		PaymentInquiryStatus inquiryStatus = PaymentInquiryStatus.from(inquiry.status());
 
 		if (inquiryStatus == PaymentInquiryStatus.FAILED) {
-			TokenCharge failed = tokenChargePort.save(charge.markFailed(inquiry.paymentId()));
-			log.warn(
-					"PaymentVerifiedTokenGrantSupport : verifyAndGrant : PG 결제 FAILED 처리 - chargeUuid={}",
-					failed.chargeUuid()
-			);
-			return toResult(failed);
+			return saveFailedAndPublish(charge, inquiry.paymentId(), inquiry.status(), "PG_PAYMENT_FAILED");
 		}
 		if (inquiryStatus == PaymentInquiryStatus.CANCELED) {
 			TokenCharge canceled = tokenChargePort.save(charge.markCanceled(inquiry.paymentId()));
+			publishChargeFailed(canceled, "PG_PAYMENT_CANCELED", inquiry.status());
 			log.warn(
 					"PaymentVerifiedTokenGrantSupport : verifyAndGrant : PG 결제 CANCELED 처리 - chargeUuid={}",
 					canceled.chargeUuid()
@@ -66,24 +66,11 @@ public class PaymentVerifiedTokenGrantSupport {
 			return toResult(canceled);
 		}
 		if (inquiryStatus != PaymentInquiryStatus.PAID) {
-			TokenCharge failed = tokenChargePort.save(charge.markFailed(inquiry.paymentId()));
-			log.warn(
-					"PaymentVerifiedTokenGrantSupport : verifyAndGrant : PG 결제 상태 미확인으로 FAILED 처리 - chargeUuid={}, pgStatus={}",
-					failed.chargeUuid(),
-					inquiry.status()
-			);
-			return toResult(failed);
+			return saveFailedAndPublish(charge, inquiry.paymentId(), inquiry.status(), "PG_PAYMENT_STATUS_UNKNOWN");
 		}
 
 		if (inquiry.totalAmount() != charge.paidAmount()) {
-			TokenCharge failed = tokenChargePort.save(charge.markFailed(inquiry.paymentId()));
-			log.warn(
-					"PaymentVerifiedTokenGrantSupport : verifyAndGrant : PG 금액 불일치로 FAILED 처리 - chargeUuid={}, expected={}, actual={}",
-					failed.chargeUuid(),
-					charge.paidAmount(),
-					inquiry.totalAmount()
-			);
-			return toResult(failed);
+			return saveFailedAndPublish(charge, inquiry.paymentId(), inquiry.status(), "PG_AMOUNT_MISMATCH");
 		}
 
 		TransactionUuid ledgerTransactionUuid = new TransactionUuid(charge.chargeUuid().value());
@@ -122,6 +109,31 @@ public class PaymentVerifiedTokenGrantSupport {
 							+ requestedPaidAmount
 			);
 		}
+	}
+
+	private TokenChargeRequestResult saveFailedAndPublish(
+			TokenCharge charge,
+			String providerPaymentId,
+			String pgStatus,
+			String reason
+	) {
+		TokenCharge failed = tokenChargePort.save(charge.markFailed(providerPaymentId));
+		publishChargeFailed(failed, reason, pgStatus);
+		log.warn(
+				"PaymentVerifiedTokenGrantSupport : verifyAndGrant : PG 결제 FAILED 처리 - chargeUuid={}, reason={}",
+				failed.chargeUuid(),
+				reason
+		);
+		return toResult(failed);
+	}
+
+	private void publishChargeFailed(TokenCharge charge, String reason, String pgStatus) {
+		tokenEventOutboxPort.save(TokenChargeFailedOutboxSupport.toOutboxMessage(charge, reason, pgStatus));
+		log.info(
+				"PaymentVerifiedTokenGrantSupport : publishChargeFailed : TokenChargeFailed Outbox 저장 - chargeUuid={}, reason={}",
+				charge.chargeUuid(),
+				reason
+		);
 	}
 
 	private void verifyProduct(TokenCharge charge) {
