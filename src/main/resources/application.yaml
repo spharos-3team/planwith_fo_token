@@ -70,6 +70,8 @@ app:
     marker: ${DEPLOY_MARKER:planwith-fo-token-deploy-v1}
 
 token:
+  gateway-auth:
+    enabled: ${TOKEN_GATEWAY_AUTH_ENABLED:true}
   kafka:
     consumer-enabled: ${TOKEN_KAFKA_CONSUMER_ENABLED:false}
     topics:

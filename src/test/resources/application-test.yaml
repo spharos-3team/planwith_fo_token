@@ -29,6 +29,8 @@ management:
       enabled: false
 
 token:
+  gateway-auth:
+    enabled: false
   kafka:
     consumer-enabled: false
   outbox:
