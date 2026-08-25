@@ -72,7 +72,7 @@ public class RegisterPaymentMethodService implements RegisterPaymentMethodUseCas
 				PaymentMethodUuid.newId(),
 				command.memberUuid(),
 				billingKeyResult.billingKey(),
-				billingKeyResult.cardName(),
+				command.cardName(),
 				billingKeyResult.fourCardNumber(),
 				asDefault,
 				Instant.now()

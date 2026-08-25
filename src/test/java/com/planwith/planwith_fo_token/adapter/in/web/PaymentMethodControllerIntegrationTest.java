@@ -37,6 +37,7 @@ class PaymentMethodControllerIntegrationTest {
 	@Test
 	void registerAndListPaymentMethodsWithoutSensitiveFields() throws Exception {
 		String body = objectMapper.writeValueAsString(Map.of(
+				"cardName", "생활비 카드",
 				"cardNumber", "4111111111111111",
 				"expiryYear", "28",
 				"expiryMonth", "12",
@@ -50,7 +51,7 @@ class PaymentMethodControllerIntegrationTest {
 						.content(body))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.paymentMethodUuid").exists())
-				.andExpect(jsonPath("$.cardName").value("Stub Card"))
+				.andExpect(jsonPath("$.cardName").value("생활비 카드"))
 				.andExpect(jsonPath("$.fourCardNumber").value("1111"))
 				.andExpect(jsonPath("$.defaultMethod").value(true))
 				.andExpect(jsonPath("$.billingKey").doesNotExist())
@@ -61,7 +62,7 @@ class PaymentMethodControllerIntegrationTest {
 		mockMvc.perform(get("/api/planwith-fo-token/members/{memberUuid}/payment-methods", MEMBER))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.length()").value(1))
-				.andExpect(jsonPath("$[0].cardName").value("Stub Card"))
+				.andExpect(jsonPath("$[0].cardName").value("생활비 카드"))
 				.andExpect(jsonPath("$[0].fourCardNumber").value("1111"))
 				.andExpect(jsonPath("$[0].defaultMethod").value(true))
 				.andExpect(jsonPath("$[0].billingKey").doesNotExist());
@@ -70,6 +71,24 @@ class PaymentMethodControllerIntegrationTest {
 	@Test
 	void registerRejectsMissingCardNumber() throws Exception {
 		String body = objectMapper.writeValueAsString(Map.of(
+				"cardName", "생활비 카드",
+				"expiryYear", "28",
+				"expiryMonth", "12",
+				"birthOrBusinessRegistrationNumber", "900101",
+				"passwordTwoDigits", "12"
+		));
+
+		mockMvc.perform(post("/api/planwith-fo-token/members/{memberUuid}/payment-methods", MEMBER)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(body))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+	}
+
+	@Test
+	void registerRejectsMissingCardName() throws Exception {
+		String body = objectMapper.writeValueAsString(Map.of(
+				"cardNumber", "4111111111111111",
 				"expiryYear", "28",
 				"expiryMonth", "12",
 				"birthOrBusinessRegistrationNumber", "900101",
@@ -114,6 +133,7 @@ class PaymentMethodControllerIntegrationTest {
 
 	private UUID registerCard(UUID memberUuid, String cardNumber, boolean defaultMethod) throws Exception {
 		String body = objectMapper.writeValueAsString(Map.of(
+				"cardName", "테스트 카드",
 				"cardNumber", cardNumber,
 				"expiryYear", "28",
 				"expiryMonth", "12",

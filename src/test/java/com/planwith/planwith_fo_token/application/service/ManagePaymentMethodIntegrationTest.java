@@ -106,6 +106,7 @@ class ManagePaymentMethodIntegrationTest {
 	private PaymentMethodResult register(MemberUuid memberUuid, String cardNumber, boolean defaultMethod) {
 		return registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
 				memberUuid,
+				"테스트 카드",
 				cardNumber,
 				"28",
 				"12",

@@ -1,6 +1,7 @@
 package com.planwith.planwith_fo_token.adapter.in.web.dto;
 
 public record RegisterPaymentMethodRequest(
+		String cardName,
 		String cardNumber,
 		String expiryYear,
 		String expiryMonth,

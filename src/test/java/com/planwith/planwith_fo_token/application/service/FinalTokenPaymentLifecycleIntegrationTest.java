@@ -93,10 +93,10 @@ class FinalTokenPaymentLifecycleIntegrationTest {
 	@Test
 	void endToEndCardPayGrantUseLedgerAndMonthlyFreeLifecycle() {
 		PaymentMethodResult firstCard = registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
-				MEMBER, "4111111111111111", "28", "12", "900101", "12", true
+				MEMBER, "첫 번째 카드", "4111111111111111", "28", "12", "900101", "12", true
 		));
 		PaymentMethodResult secondCard = registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
-				MEMBER, "4222222222222222", "29", "01", "900101", "34", false
+				MEMBER, "두 번째 카드", "4222222222222222", "29", "01", "900101", "34", false
 		));
 		setDefaultPaymentMethodUseCase.setDefault(new SetDefaultPaymentMethodCommand(
 				MEMBER,
@@ -184,7 +184,7 @@ class FinalTokenPaymentLifecycleIntegrationTest {
 	@Test
 	void deletedCardCannotBeUsedForBillingKeyPayment() {
 		PaymentMethodResult card = registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
-				MEMBER, "4333333333333333", "30", "06", "900101", "56", true
+				MEMBER, "삭제할 카드", "4333333333333333", "30", "06", "900101", "56", true
 		));
 		TokenChargeRequestResult ready = requestTokenChargeUseCase.request(new RequestTokenChargeCommand(
 				MEMBER,

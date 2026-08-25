@@ -140,6 +140,9 @@ public class PaymentMethodController {
 			UUID memberUuid,
 			RegisterPaymentMethodRequest request
 	) {
+		if (request.cardName() == null || request.cardName().isBlank()) {
+			throw new IllegalArgumentException("cardName is required.");
+		}
 		if (request.cardNumber() == null || request.cardNumber().isBlank()) {
 			throw new IllegalArgumentException("cardNumber is required.");
 		}
@@ -158,6 +161,7 @@ public class PaymentMethodController {
 		}
 		return new RegisterPaymentMethodCommand(
 				MemberUuid.from(memberUuid.toString()),
+				request.cardName(),
 				request.cardNumber(),
 				request.expiryYear(),
 				request.expiryMonth(),

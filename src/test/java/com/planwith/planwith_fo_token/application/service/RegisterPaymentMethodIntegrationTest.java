@@ -40,7 +40,7 @@ class RegisterPaymentMethodIntegrationTest {
 		PaymentMethodResult first = registerPaymentMethodUseCase.register(registerCommand(false));
 
 		assertThat(first.defaultMethod()).isTrue();
-		assertThat(first.cardName()).isEqualTo("Stub Card");
+		assertThat(first.cardName()).isEqualTo("생활비 카드");
 		assertThat(first.fourCardNumber()).isEqualTo("1111");
 
 		PaymentMethod saved = paymentMethodPort.findByUuid(first.paymentMethodUuid()).orElseThrow();
@@ -53,6 +53,7 @@ class RegisterPaymentMethodIntegrationTest {
 		PaymentMethodResult first = registerPaymentMethodUseCase.register(registerCommand(false));
 		PaymentMethodResult second = registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
 				MEMBER,
+				"구독 카드",
 				"4222222222222222",
 				"29",
 				"01",
@@ -78,6 +79,7 @@ class RegisterPaymentMethodIntegrationTest {
 		registerPaymentMethodUseCase.register(registerCommand(false));
 		PaymentMethodResult second = registerPaymentMethodUseCase.register(new RegisterPaymentMethodCommand(
 				MEMBER,
+				"삭제할 카드",
 				"4333333333333333",
 				"30",
 				"06",
@@ -97,6 +99,7 @@ class RegisterPaymentMethodIntegrationTest {
 	private RegisterPaymentMethodCommand registerCommand(boolean defaultMethod) {
 		return new RegisterPaymentMethodCommand(
 				MEMBER,
+				"생활비 카드",
 				"4111111111111111",
 				"28",
 				"12",

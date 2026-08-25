@@ -32,17 +32,17 @@ token:
   outbox:
     enabled: false
   mock:
-    enabled: true
+    enabled: false
     member-uuid: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
   charge:
     reconcile:
       enabled: false
 
 portone:
-  stub-enabled: true
-  store-id: ${PORTONE_STORE_ID:}
-  channel-key: ${PORTONE_CHANNEL_KEY:}
-  api-secret: ${PORTONE_API_SECRET:}
+  stub-enabled: ${PORTONE_STUB_ENABLED:true}
+  store-id: ${PORTONE_STORE_ID:store-e091eba1-ca0f-4fa7-8134-0fe43e9e727e}
+  channel-key: ${PORTONE_CHANNEL_KEY:channel-key-37faef63-c3a7-435f-afa1-b4dd0421860f}
+  api-secret: ${PORTONE_API_SECRET:5test_sk_d26DlbXAaV0xQbpa7y1VqY50Q9RB}
   api-base-url: https://api.portone.io
 
 # powershell 실행 방법
