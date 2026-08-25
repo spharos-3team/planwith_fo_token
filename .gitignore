@@ -40,3 +40,7 @@ out/
 .env
 .env.local
 .env.*.local
+
+# Ignore local Spring Boot config files that contain host-specific secrets or credentials
+/src/main/resources/application-local.yml
+/src/main/resources/application-local.yaml
