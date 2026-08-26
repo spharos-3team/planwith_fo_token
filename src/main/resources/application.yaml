@@ -105,7 +105,7 @@ token:
       max-retry: ${TOKEN_CHARGE_RECONCILE_MAX_RETRY:10}
 
 portone:
-  stub-enabled: ${PORTONE_STUB_ENABLED:false}
+  stub-enabled: ${PORTONE_STUB_ENABLED:true}
   store-id: ${PORTONE_STORE_ID:}
   channel-key: ${PORTONE_CHANNEL_KEY:}
   api-secret: ${PORTONE_API_SECRET:}

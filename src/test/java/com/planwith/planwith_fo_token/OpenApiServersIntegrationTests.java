@@ -25,4 +25,15 @@ class OpenApiServersIntegrationTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.servers[0].url").value("/"));
 	}
+
+	@Test
+	void openApiProvidesGatewayBearerAndDirectUserIdAuthentication() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.components.securitySchemes.Bearer.type").value("http"))
+				.andExpect(jsonPath("$.components.securitySchemes.Bearer.scheme").value("bearer"))
+				.andExpect(jsonPath("$.components.securitySchemes['X-Auth-User-Id'].type").value("apiKey"))
+				.andExpect(jsonPath("$.components.securitySchemes['X-Auth-User-Id'].name").value("X-Auth-User-Id"))
+				.andExpect(jsonPath("$.components.securitySchemes['X-Auth-User-Id'].in").value("header"));
+	}
 }
