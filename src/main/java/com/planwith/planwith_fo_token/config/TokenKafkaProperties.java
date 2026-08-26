@@ -27,6 +27,7 @@ public class TokenKafkaProperties {
 	public static class Topics {
 		private String paymentCompleted = "planwith.payment.completed";
 		private String gradeRewardGranted = "planwith.grade.reward-granted";
+		private String gradeInitialBonusGranted = "planwith.grade.initial-bonus-granted";
 		private String tokenCharged = "planwith.token.charged";
 		private String tokenUsed = "planwith.token.used";
 		private String tokenRewarded = "planwith.token.rewarded";
@@ -37,6 +38,10 @@ public class TokenKafkaProperties {
 		public void setPaymentCompleted(String paymentCompleted) { this.paymentCompleted = paymentCompleted; }
 		public String getGradeRewardGranted() { return gradeRewardGranted; }
 		public void setGradeRewardGranted(String gradeRewardGranted) { this.gradeRewardGranted = gradeRewardGranted; }
+		public String getGradeInitialBonusGranted() { return gradeInitialBonusGranted; }
+		public void setGradeInitialBonusGranted(String gradeInitialBonusGranted) {
+			this.gradeInitialBonusGranted = gradeInitialBonusGranted;
+		}
 		public String getTokenCharged() { return tokenCharged; }
 		public void setTokenCharged(String tokenCharged) { this.tokenCharged = tokenCharged; }
 		public String getTokenUsed() { return tokenUsed; }

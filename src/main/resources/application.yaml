@@ -29,7 +29,7 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     listener:
       ack-mode: record
-      auto-startup: ${TOKEN_KAFKA_CONSUMER_ENABLED:false}
+      auto-startup: ${TOKEN_KAFKA_CONSUMER_ENABLED:true}
 
 server:
   address: ${SERVER_ADDRESS:0.0.0.0}
@@ -41,7 +41,7 @@ eureka:
     serviceUrl:
       defaultZone: "${EUREKA_DEFAULT_ZONE:http://discovery:8761/eureka/}"
   instance:
-    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:false}
+    prefer-ip-address: ${EUREKA_PREFER_IP_ADDRESS:true}
 
 management:
   endpoints:
@@ -63,9 +63,9 @@ springdoc:
 app:
   gateway:
     public-url: ${GATEWAY_PUBLIC_URL:/}
-  auth:
-    id: ${LOGIN_ID:test-001}
-    pw: ${LOGIN_PASSWORD:1234}
+  # auth:
+  #   id: ${LOGIN_ID:test-001}
+  #   pw: ${LOGIN_PASSWORD:1234}
   deploy:
     marker: ${DEPLOY_MARKER:planwith-fo-token-deploy-v1}
 
@@ -73,17 +73,18 @@ token:
   gateway-auth:
     enabled: ${TOKEN_GATEWAY_AUTH_ENABLED:true}
   kafka:
-    consumer-enabled: ${TOKEN_KAFKA_CONSUMER_ENABLED:false}
+    consumer-enabled: ${TOKEN_KAFKA_CONSUMER_ENABLED:true}
     topics:
       payment-completed: ${TOKEN_TOPIC_PAYMENT_COMPLETED:planwith.payment.completed}
       grade-reward-granted: ${TOKEN_TOPIC_GRADE_REWARD_GRANTED:planwith.grade.reward-granted}
+      grade-initial-bonus-granted: ${TOKEN_TOPIC_GRADE_INITIAL_BONUS_GRANTED:planwith.grade.initial-bonus-granted}
       token-charged: ${TOKEN_TOPIC_TOKEN_CHARGED:planwith.token.charged}
       token-used: ${TOKEN_TOPIC_TOKEN_USED:planwith.token.used}
       token-rewarded: ${TOKEN_TOPIC_TOKEN_REWARDED:planwith.token.rewarded}
       token-expired: ${TOKEN_TOPIC_TOKEN_EXPIRED:planwith.token.expired}
       token-charge-failed: ${TOKEN_TOPIC_TOKEN_CHARGE_FAILED:planwith.token.charge-failed}
   outbox:
-    enabled: ${TOKEN_OUTBOX_ENABLED:false}
+    enabled: ${TOKEN_OUTBOX_ENABLED:true}
     relay-batch-size: ${TOKEN_OUTBOX_RELAY_BATCH_SIZE:50}
     relay-interval: ${TOKEN_OUTBOX_RELAY_INTERVAL:5s}
     relay-initial-delay: ${TOKEN_OUTBOX_RELAY_INITIAL_DELAY:5s}
@@ -92,12 +93,12 @@ token:
     backoff-initial: ${TOKEN_OUTBOX_BACKOFF_INITIAL:5s}
     backoff-multiplier: ${TOKEN_OUTBOX_BACKOFF_MULTIPLIER:2}
     backoff-max: ${TOKEN_OUTBOX_BACKOFF_MAX:5m}
-  mock:
-    enabled: ${TOKEN_MOCK_ENABLED:false}
-    member-uuid: ${TOKEN_MOCK_MEMBER_UUID:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa}
+  # mock:
+  #   enabled: ${TOKEN_MOCK_ENABLED:true}
+  #   member-uuid: ${TOKEN_MOCK_MEMBER_UUID:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa}
   charge:
     reconcile:
-      enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:false}
+      enabled: ${TOKEN_CHARGE_RECONCILE_ENABLED:true}
       batch-size: ${TOKEN_CHARGE_RECONCILE_BATCH_SIZE:50}
       stale-after: ${TOKEN_CHARGE_RECONCILE_STALE_AFTER:5m}
       interval: ${TOKEN_CHARGE_RECONCILE_INTERVAL:1m}

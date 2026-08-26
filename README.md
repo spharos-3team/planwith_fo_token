@@ -10,7 +10,7 @@
 | Eureka / Compose / ECR | `planwith-fo-token` |
 | 패키지 | `com.planwith.planwith_fo_token` |
 | DB | `token_db` |
-| 역할 | 토큰 지갑·원장, 카드/결제(PortOne), 충전·지급·사용·만료, 등급 FREE 연동, Outbox/Kafka |
+| 역할 | 토큰 지갑·원장, 카드/결제(PortOne), 충전·지급·사용·만료, 등급 FREE·최초 BONUS 연동, Outbox/Kafka |
 
 토큰과 실제 금액을 다루는 도메인으로, **Wallet/Ledger 안전 구조 → 결제 → 등급/이벤트** 순으로 구현되었습니다.
 
@@ -43,11 +43,15 @@
 - 흐름: 상품 조회 → 충전 요청 → pay / confirm → PAID 토큰 지급
 - PG 재조회 검증 후 지급, 금액 불일치·중복 요청 처리
 
-### 2.4 Grade FREE Token
+### 2.4 Grade Token
 
-- Kafka `planwith.grade.reward-granted` 구독
-- `eventUuid` / 회원·월(`yyyy-MM`) 멱등 지급
-- 지급 전 FREE EXPIRE → 신규 FREE REWARD
+- 월간 FREE: Kafka `planwith.grade.reward-granted` 구독
+- FREE는 `eventUuid` / 회원·월(`yyyy-MM`) 멱등 지급
+- FREE 지급 전 기존 FREE EXPIRE → 신규 FREE REWARD
+- 최초 등급 BONUS: Kafka `planwith.grade.initial-bonus-granted` 구독
+- BONUS는 회원 기준 결정적 `transactionUuid`로 최초 1회만 지급
+- BONUS 필수 payload: `eventUuid`, `memberUuid`, 양수 `tokenAmount`
+- BONUS 선택 payload: `gradeCode`, ISO-8601 `grantedAt`
 - Grade DB 직접 조회 없음(이벤트만)
 
 ### 2.5 Outbox / Kafka
@@ -55,7 +59,7 @@
 - Wallet·Ledger·Outbox 동일 트랜잭션
 - Relay → Kafka → `publishedAt`
 - 발행 이벤트: `TokenCharged` / `TokenUsed` / `TokenRewarded` / `TokenExpired` / `TokenChargeFailed`
-- 수신: `GradeRewardGranted`, `PaymentCompleted`
+- 수신: `GradeRewardGranted`, `GradeInitialBonusGranted`, `PaymentCompleted`
 
 ### 2.6 실패 복구 / 정합성
 
@@ -83,7 +87,7 @@
 |--------|------|
 | PortOne | BillingKey 발급, 결제, 조회, 취소 (`stub` 지원) |
 | Kafka | 등급/결제 수신, 토큰 상태 이벤트 발행 |
-| Grade | `GradeRewardGranted`만 소비 |
+| Grade | `GradeRewardGranted`, `GradeInitialBonusGranted` 소비 |
 | Gateway | 진입점 `:8000` (JWT는 Gateway 담당 예정, Token에는 미구현) |
 
 ---
