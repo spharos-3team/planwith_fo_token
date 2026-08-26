@@ -8,11 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
+
+	private static final String BEARER_AUTH_SCHEME = "bearerAuth";
 
 	@Value("${app.gateway.public-url:/}")
 	private String gatewayPublicUrl;
@@ -31,6 +36,12 @@ public class OpenApiConfig {
 								테스트용 memberUuid: %s
 								""".formatted(mockMemberUuid))
 						.version("v1"))
+				.components(new Components()
+						.addSecuritySchemes(BEARER_AUTH_SCHEME, new SecurityScheme()
+								.type(SecurityScheme.Type.HTTP)
+								.scheme("bearer")
+								.bearerFormat("JWT")))
+				.addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME))
 				.servers(List.of(new Server()
 						.url(gatewayPublicUrl)
 						.description("API Gateway")));
